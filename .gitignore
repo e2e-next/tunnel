@@ -1,0 +1,69 @@
+# ===== Runtime state and captured traffic (keep these ignored: they can hold
+#       real responses and real credentials) =====
+# .tunnel/ is the server's runtime state, recorded responses included
+.tunnel/
+
+# ===== Local configuration (real addresses and keys) =====
+.env
+.env.*
+!.env.example
+
+# ===== Local scratch work =====
+scratch/
+
+# ===== Development notes (specs, plans, reviews): kept on the author's
+#       machine, not in the repository =====
+docs/tasks/
+
+# ===== The panel's build inputs and outputs (`make panel` recreates both out
+#       of panel/src; neither is ever committed) =====
+panel/node_modules/
+panel/dist/
+
+# ===== Coding agent / AI tool local files (local permissions, session history
+#       and MCP configuration can hold secrets: never commit them) =====
+.claude/
+CLAUDE.local.md
+.mcp.json
+.cursor/
+.windsurf/
+.codex/
+.gemini/
+.kiro/
+.amazonq/
+.junie/
+.continue/
+.augment/
+.trae/
+.roo/
+.clinerules
+.aider*
+.specstory/
+.serena/
+.opencode/
+.crush/
+
+# ===== Editor and tool local settings =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ===== Tests and static checks =====
+.cache
+
+# ===== Temporary files and logs =====
+*.log
+*.tmp
+*.temp
+*.out
+
+# ===== Operating system files =====
+.DS_Store
+Thumbs.db
+
+# ===== Node: the dependencies and the build output (`npm ci` and
+#       `npm run build` recreate both; neither is ever committed) =====
+/node_modules/
+/dist/

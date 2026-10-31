@@ -1,0 +1,22 @@
+usage: tunnel requests [-h] [--base BASE] [--json] [--each] [--key KEY]
+                       [--host HOST] [--since SEQ] [--last N] [--unmatched]
+                       [--encrypted] [-q TEXT]
+                       {show} ...
+
+positional arguments:
+  {show}
+    show              one request and its response in full
+
+options:
+  -h, --help          show this help message and exit
+  --base BASE         where the admin API answers (default
+                      http://127.0.0.1:8000)
+  --json              print raw JSON, errors included, for piping into jq
+  --each              one row per request instead of the aggregate
+  --key KEY           only this rule key, e.g. GET:api.example.com/api/feed
+  --host HOST         only this host; * is a wildcard
+  --since SEQ         only what arrived after this seq
+  --last N            only the last N entries
+  --unmatched         only requests no rule answered
+  --encrypted         only tunnels that were not decrypted
+  -q, --keyword TEXT  keyword: matches host, path, query, status and rule

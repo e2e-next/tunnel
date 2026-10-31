@@ -1,0 +1,178 @@
+{
+  "max_requests_history": 500,
+  "auto_record_requests": true,
+  "default_mode": "replay",
+  "ssl_proxying": {
+    "enabled": true,
+    "include": [
+      "*.example.com",
+      "api.x.io:443"
+    ],
+    "exclude": []
+  },
+  "allow_clients": [
+    "10.0.0.0/8"
+  ],
+  "redact_headers": [
+    "authorization",
+    "cookie",
+    "set-cookie",
+    "x-api-key",
+    "proxy-authorization"
+  ],
+  "recording": {
+    "active": false
+  },
+  "session": "acct_a",
+  "replay_marker": false,
+  "request_configs": {
+    "GET:/api/feed": {
+      "request_key": "GET:/api/feed",
+      "mode": "json",
+      "json_response": {
+        "v": 1,
+        "名字": "值",
+        "list": [
+          1,
+          2.5,
+          null,
+          true
+        ],
+        "id": 12345678901234567890
+      },
+      "status_code": 201,
+      "enabled": true,
+      "description": "",
+      "merge_json": {},
+      "headers": {
+        "x-a": "b"
+      },
+      "target": "",
+      "response_delay": 2.0,
+      "script": "",
+      "replay_session": "",
+      "replay_strategy": "match",
+      "fault": "none",
+      "fault_seconds": 3600.0
+    },
+    "POST:api.example.com/v5/pay": {
+      "request_key": "POST:api.example.com/v5/pay",
+      "mode": "passthrough",
+      "json_response": {
+        "message": "Tunnel response"
+      },
+      "status_code": 200,
+      "enabled": true,
+      "description": "",
+      "merge_json": {
+        "a": {
+          "b": 1
+        },
+        "big": -98765432109876543210
+      },
+      "headers": {},
+      "target": "https://staging.example.com",
+      "response_delay": 0.0,
+      "script": "",
+      "replay_session": "",
+      "replay_strategy": "match",
+      "fault": "hang",
+      "fault_seconds": 30.0
+    },
+    "GET:/api/poll": {
+      "request_key": "GET:/api/poll",
+      "mode": "replay",
+      "json_response": {
+        "message": "Tunnel response"
+      },
+      "status_code": 200,
+      "enabled": true,
+      "description": "",
+      "merge_json": {},
+      "headers": {},
+      "target": "",
+      "response_delay": 0.0,
+      "script": "",
+      "replay_session": "acct_b",
+      "replay_strategy": "sequence",
+      "fault": "none",
+      "fault_seconds": 3600.0
+    },
+    "GET:/api/script": {
+      "request_key": "GET:/api/script",
+      "mode": "script",
+      "json_response": {
+        "message": "Tunnel response"
+      },
+      "status_code": 200,
+      "enabled": true,
+      "description": "tab\there \"quoted\"   line-sep 😀",
+      "merge_json": {},
+      "headers": {},
+      "target": "",
+      "response_delay": 0.25,
+      "script": "def handler(ctx):\n    return {'ok': True}\n",
+      "replay_session": "",
+      "replay_strategy": "match",
+      "fault": "none",
+      "fault_seconds": 3600.0
+    },
+    "GET:/api/nomode": {
+      "request_key": "GET:/api/nomode",
+      "mode": "replay",
+      "json_response": {
+        "message": "Tunnel response"
+      },
+      "status_code": 204,
+      "enabled": true,
+      "description": "",
+      "merge_json": {},
+      "headers": {},
+      "target": "",
+      "response_delay": 0.0,
+      "script": "",
+      "replay_session": "",
+      "replay_strategy": "match",
+      "fault": "none",
+      "fault_seconds": 3600.0
+    },
+    "GET:/10": {
+      "request_key": "GET:/10",
+      "mode": "json",
+      "json_response": {
+        "message": "Tunnel response"
+      },
+      "status_code": 200,
+      "enabled": true,
+      "description": "",
+      "merge_json": {},
+      "headers": {},
+      "target": "",
+      "response_delay": 0.0,
+      "script": "",
+      "replay_session": "",
+      "replay_strategy": "match",
+      "fault": "none",
+      "fault_seconds": 3600.0
+    },
+    "GET:/2": {
+      "request_key": "GET:/2",
+      "mode": "json",
+      "json_response": {
+        "message": "Tunnel response"
+      },
+      "status_code": 200,
+      "enabled": true,
+      "description": "",
+      "merge_json": {},
+      "headers": {},
+      "target": "",
+      "response_delay": 0.0,
+      "script": "",
+      "replay_session": "",
+      "replay_strategy": "match",
+      "fault": "none",
+      "fault_seconds": 3600.0
+    }
+  }
+}

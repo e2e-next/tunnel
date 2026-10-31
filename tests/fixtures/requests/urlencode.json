@@ -1,0 +1,51 @@
+[
+  {
+    "query": {},
+    "urlencode": ""
+  },
+  {
+    "query": {
+      "page": "2"
+    },
+    "urlencode": "page=2"
+  },
+  {
+    "query": {
+      "q": "a b&c=d"
+    },
+    "urlencode": "q=a+b%26c%3Dd"
+  },
+  {
+    "query": {
+      "t": "~*-._!'()"
+    },
+    "urlencode": "t=~%2A-._%21%27%28%29"
+  },
+  {
+    "query": {
+      "ü": "é/?#[]@"
+    },
+    "urlencode": "%C3%BC=%C3%A9%2F%3F%23%5B%5D%40"
+  },
+  {
+    "query": {
+      "empty": ""
+    },
+    "urlencode": "empty="
+  },
+  {
+    "query": {
+      "a": "1",
+      "b": "2",
+      "c": "3"
+    },
+    "urlencode": "a=1&b=2&c=3"
+  },
+  {
+    "query": {
+      "plus": "+",
+      "pct": "%20"
+    },
+    "urlencode": "plus=%2B&pct=%2520"
+  }
+]

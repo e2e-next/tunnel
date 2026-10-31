@@ -1,0 +1,10 @@
+usage: tunnel rm [-h] [--base BASE] [--json] method path
+
+positional arguments:
+  method
+  path
+
+options:
+  -h, --help   show this help message and exit
+  --base BASE  where the admin API answers (default http://127.0.0.1:8000)
+  --json       print raw JSON, errors included, for piping into jq

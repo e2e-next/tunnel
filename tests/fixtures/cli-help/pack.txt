@@ -1,0 +1,10 @@
+usage: tunnel pack [-h] [--base BASE] [--json] [-o OUT] file
+
+positional arguments:
+  file           the scenario JSON file to read
+
+options:
+  -h, --help     show this help message and exit
+  --base BASE    where the admin API answers (default http://127.0.0.1:8000)
+  --json         print raw JSON, errors included, for piping into jq
+  -o, --out OUT  output file; prints to stdout when not given

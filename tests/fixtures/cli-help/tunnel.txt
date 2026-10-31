@@ -1,0 +1,49 @@
+usage: tunnel [-h] [--base BASE] [--json] [--version]
+              {serve,status,stop,init,agents,mcp,ls,requests,wait,set,rm,apply,export,pack,reset,mode,session,record,recordings,ssl,check,ca} ...
+
+tunnel: a local proxy and mock server — configure what each endpoint answers,
+watch the traffic, replay what was recorded
+
+positional arguments:
+  {serve,status,stop,init,agents,mcp,ls,requests,wait,set,rm,apply,export,pack,reset,mode,session,record,recordings,ssl,check,ca}
+    serve               start the admin port (127.0.0.1) and the proxy port
+    status              whether a background server is running, and where
+    stop                stop the server started with `serve --background`
+    init                create .tunnel/ here so this project keeps its own
+                        config, state and recordings
+    agents              print the guide for coding agents, for the version
+                        installed
+    mcp                 speak MCP on stdin and stdout, so a coding agent
+                        drives tunnel with typed tools
+    ls                  list the configured mocks
+    requests            what the client actually called, aggregated or one by
+                        one
+    wait                block until the client has made this request (exit 3
+                        on timeout)
+    set                 configure one endpoint; only the fields you pass
+                        change
+    rm                  delete one endpoint's rule
+    apply               apply a scenario file: a group of mocks, all or
+                        nothing
+    export              export the configured mocks as a scenario file
+    pack                inline a scenario's script_file and json_file, for a
+                        test bundle to apply on its own
+    reset               clear what one test case leaves for the next
+    mode                how endpoints with no rule of their own are answered
+    session             the session this run records into and replays from
+    record              record the calls that pass through to the real server
+    recordings          the recorded calls: list, export, import and delete
+                        them
+    ssl                 which hosts tunnel decrypts (Charles calls these SSL
+                        Proxying Locations)
+    check               send one request through the proxy port and print the
+                        answer
+    ca                  the CA certificate devices install so tunnel can
+                        decrypt HTTPS
+
+options:
+  -h, --help            show this help message and exit
+  --base BASE           where the admin API answers (default
+                        http://127.0.0.1:8000)
+  --json                print raw JSON, errors included, for piping into jq
+  --version             show program's version number and exit

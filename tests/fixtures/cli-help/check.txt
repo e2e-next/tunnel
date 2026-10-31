@@ -1,0 +1,12 @@
+usage: tunnel check [-h] [--base BASE] [--json] [-q K=V] [-d BODY] method url
+
+positional arguments:
+  method           HTTP method, e.g. GET
+  url              the full URL, e.g. https://api.example.com/api/feed
+
+options:
+  -h, --help       show this help message and exit
+  --base BASE      where the admin API answers (default http://127.0.0.1:8000)
+  --json           print raw JSON, errors included, for piping into jq
+  -q, --query K=V  query parameter, repeatable
+  -d, --data BODY  request body: literal JSON, @file, or plain text

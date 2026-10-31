@@ -1,0 +1,581 @@
+{
+  "rows": [
+    {
+      "session": "acct_a",
+      "seq": 1,
+      "time": "2026-10-11T09:30:00.007",
+      "key": "GET:api.example.com/v5/suggestions",
+      "query": {
+        "page": "1",
+        "q": "a b&c~*"
+      },
+      "status": 200,
+      "size": 207
+    },
+    {
+      "session": "acct_a",
+      "seq": 2,
+      "time": "2026-10-11T09:30:00.007",
+      "key": "POST:api.example.com/api/pay",
+      "query": {},
+      "status": 201,
+      "size": 70
+    },
+    {
+      "session": "acct_a",
+      "seq": 3,
+      "time": "2026-10-11T09:30:00.007",
+      "key": "GET:cdn.example.com/img/a.png",
+      "query": {},
+      "status": 200,
+      "size": 10
+    },
+    {
+      "session": "acct_a",
+      "seq": 4,
+      "time": "2026-10-11T09:30:00.007",
+      "key": "GET:api.example.com/",
+      "query": {},
+      "status": 204,
+      "size": 0
+    },
+    {
+      "session": "acct_a",
+      "seq": 5,
+      "time": "2026-10-11T09:30:00.007",
+      "key": "GET:api.example.com/text",
+      "query": {},
+      "status": 200,
+      "size": 21
+    },
+    {
+      "session": "acct_a",
+      "seq": 6,
+      "time": "2026-10-11T09:30:00.007",
+      "key": "get:api.example.com/v5/a b/../secrets",
+      "query": {
+        "10": "x",
+        "2": "y"
+      },
+      "status": 200,
+      "size": 51
+    },
+    {
+      "session": "acct_b",
+      "seq": 1,
+      "time": "2026-10-11T09:31:00.000",
+      "key": "GET:a/x",
+      "query": {},
+      "status": 200,
+      "size": 27
+    },
+    {
+      "session": "acct_b",
+      "seq": 1,
+      "time": "2026-10-11T09:31:00.000",
+      "key": "GET:a-b/x",
+      "query": {},
+      "status": 200,
+      "size": 29
+    },
+    {
+      "session": "acct_b",
+      "seq": 3,
+      "time": "2026-10-11T09:31:00.000",
+      "key": "GET:a/api/feed.json",
+      "query": {},
+      "status": 200,
+      "size": 39
+    }
+  ],
+  "sessions": {
+    "acct_a": 6,
+    "acct_b": 3
+  },
+  "exchanges": [
+    {
+      "session": "acct_a",
+      "seq": 1,
+      "exchange": {
+        "seq": 1,
+        "time": "2026-10-11T09:30:00.007",
+        "kind": "http",
+        "request": {
+          "method": "GET",
+          "scheme": "http",
+          "host": "api.example.com",
+          "port": 80,
+          "path": "/v5/suggestions",
+          "query": {
+            "page": "1",
+            "q": "a b&c~*"
+          },
+          "url": "http://api.example.com/v5/suggestions?page=1&q=a+b%26c~%2A",
+          "headers": {
+            "accept": "application/json",
+            "x-ü": "héllo"
+          },
+          "body": null,
+          "body_encoding": null
+        },
+        "response": {
+          "status": 200,
+          "headers": {
+            "content-type": "application/json"
+          },
+          "body": {
+            "cards": [
+              {
+                "name": "é",
+                "ctrl": "\u0001\t",
+                "ls": " ",
+                "emoji": "😀",
+                "q": "\"",
+                "slash": "a/b",
+                "n": 1,
+                "neg": -2,
+                "e": 1.5
+              }
+            ],
+            "empty_obj": {},
+            "empty_arr": [],
+            "nested": {
+              "a": [
+                1,
+                [
+                  2,
+                  {
+                    "b": null
+                  }
+                ]
+              ]
+            }
+          },
+          "body_encoding": "json",
+          "elapsed_ms": 12,
+          "size": 207
+        },
+        "matched_by": null,
+        "mode": "passthrough",
+        "replay_seq": null,
+        "unmatched": false,
+        "client": "",
+        "truncated": false,
+        "encrypted": false,
+        "bytes_up": 0,
+        "bytes_down": 0
+      }
+    },
+    {
+      "session": "acct_a",
+      "seq": 2,
+      "exchange": {
+        "seq": 2,
+        "time": "2026-10-11T09:30:00.007",
+        "kind": "http",
+        "request": {
+          "method": "POST",
+          "scheme": "http",
+          "host": "api.example.com",
+          "port": 80,
+          "path": "/api/pay",
+          "query": {},
+          "url": "http://api.example.com/api/pay",
+          "headers": {
+            "content-type": "application/json"
+          },
+          "body": {
+            "amount": 12
+          },
+          "body_encoding": "json"
+        },
+        "response": {
+          "status": 201,
+          "headers": {
+            "content-type": "application/json"
+          },
+          "body": {
+            "id": 12345678901234567890,
+            "neg": -98765432109876543210,
+            "small": 7
+          },
+          "body_encoding": "json",
+          "elapsed_ms": 12,
+          "size": 70
+        },
+        "matched_by": null,
+        "mode": "passthrough",
+        "replay_seq": null,
+        "unmatched": false,
+        "client": "",
+        "truncated": false,
+        "encrypted": false,
+        "bytes_up": 0,
+        "bytes_down": 0
+      }
+    },
+    {
+      "session": "acct_a",
+      "seq": 3,
+      "exchange": {
+        "seq": 3,
+        "time": "2026-10-11T09:30:00.007",
+        "kind": "http",
+        "request": {
+          "method": "GET",
+          "scheme": "http",
+          "host": "cdn.example.com",
+          "port": 80,
+          "path": "/img/a.png",
+          "query": {},
+          "url": "http://cdn.example.com/img/a.png",
+          "headers": {},
+          "body": null,
+          "body_encoding": null
+        },
+        "response": {
+          "status": 200,
+          "headers": {
+            "content-type": "image/png"
+          },
+          "body": "iVBORw0KGgoA/w==",
+          "body_encoding": "base64",
+          "elapsed_ms": 12,
+          "size": 10
+        },
+        "matched_by": null,
+        "mode": "passthrough",
+        "replay_seq": null,
+        "unmatched": false,
+        "client": "",
+        "truncated": false,
+        "encrypted": false,
+        "bytes_up": 0,
+        "bytes_down": 0
+      }
+    },
+    {
+      "session": "acct_a",
+      "seq": 4,
+      "exchange": {
+        "seq": 4,
+        "time": "2026-10-11T09:30:00.007",
+        "kind": "http",
+        "request": {
+          "method": "GET",
+          "scheme": "http",
+          "host": "api.example.com",
+          "port": 80,
+          "path": "/",
+          "query": {},
+          "url": "http://api.example.com/",
+          "headers": {},
+          "body": null,
+          "body_encoding": null
+        },
+        "response": {
+          "status": 204,
+          "headers": {},
+          "body": null,
+          "body_encoding": null,
+          "elapsed_ms": 12,
+          "size": 0
+        },
+        "matched_by": null,
+        "mode": "passthrough",
+        "replay_seq": null,
+        "unmatched": false,
+        "client": "",
+        "truncated": false,
+        "encrypted": false,
+        "bytes_up": 0,
+        "bytes_down": 0
+      }
+    },
+    {
+      "session": "acct_a",
+      "seq": 5,
+      "exchange": {
+        "seq": 5,
+        "time": "2026-10-11T09:30:00.007",
+        "kind": "http",
+        "request": {
+          "method": "GET",
+          "scheme": "http",
+          "host": "api.example.com",
+          "port": 80,
+          "path": "/text",
+          "query": {},
+          "url": "http://api.example.com/text",
+          "headers": {},
+          "body": null,
+          "body_encoding": null
+        },
+        "response": {
+          "status": 200,
+          "headers": {
+            "content-type": "text/plain"
+          },
+          "body": "plain words\n\ttab 😀",
+          "body_encoding": "text",
+          "elapsed_ms": 12,
+          "size": 21
+        },
+        "matched_by": null,
+        "mode": "passthrough",
+        "replay_seq": null,
+        "unmatched": false,
+        "client": "",
+        "truncated": false,
+        "encrypted": false,
+        "bytes_up": 0,
+        "bytes_down": 0
+      }
+    },
+    {
+      "session": "acct_a",
+      "seq": 6,
+      "exchange": {
+        "seq": 6,
+        "time": "2026-10-11T09:30:00.007",
+        "kind": "http",
+        "request": {
+          "method": "get",
+          "scheme": "http",
+          "host": "api.example.com",
+          "port": 80,
+          "path": "/v5/a b/../secrets",
+          "query": {
+            "10": "x",
+            "2": "y"
+          },
+          "url": "http://api.example.com/v5/a b/../secrets?10=x&2=y",
+          "headers": {},
+          "body": null,
+          "body_encoding": null
+        },
+        "response": {
+          "status": 200,
+          "headers": {
+            "content-type": "application/json"
+          },
+          "body": {
+            "10": 1,
+            "2": 2,
+            "f": 1.0,
+            "g": 1e+16,
+            "h": 1e-05
+          },
+          "body_encoding": "json",
+          "elapsed_ms": 12,
+          "size": 51
+        },
+        "matched_by": null,
+        "mode": "passthrough",
+        "replay_seq": null,
+        "unmatched": false,
+        "client": "",
+        "truncated": false,
+        "encrypted": false,
+        "bytes_up": 0,
+        "bytes_down": 0
+      }
+    },
+    {
+      "session": "acct_b",
+      "seq": 1,
+      "exchange": {
+        "seq": 1,
+        "time": "2026-10-11T09:31:00.000",
+        "kind": "http",
+        "request": {
+          "method": "GET",
+          "scheme": "https",
+          "host": "a",
+          "port": 443,
+          "path": "/x",
+          "query": {},
+          "url": "https://a/x",
+          "headers": {},
+          "body": null,
+          "body_encoding": null
+        },
+        "response": {
+          "status": 200,
+          "headers": {
+            "content-type": "application/json"
+          },
+          "body": {
+            "host": "a",
+            "path": "/x"
+          },
+          "body_encoding": "json",
+          "elapsed_ms": 12,
+          "size": 27
+        },
+        "matched_by": null,
+        "mode": "passthrough",
+        "replay_seq": null,
+        "unmatched": false,
+        "client": "",
+        "truncated": false,
+        "encrypted": false,
+        "bytes_up": 0,
+        "bytes_down": 0
+      }
+    },
+    {
+      "session": "acct_b",
+      "seq": 3,
+      "exchange": {
+        "seq": 3,
+        "time": "2026-10-11T09:31:00.000",
+        "kind": "http",
+        "request": {
+          "method": "GET",
+          "scheme": "https",
+          "host": "a",
+          "port": 443,
+          "path": "/api/feed.json",
+          "query": {},
+          "url": "https://a/api/feed.json",
+          "headers": {},
+          "body": null,
+          "body_encoding": null
+        },
+        "response": {
+          "status": 200,
+          "headers": {
+            "content-type": "application/json"
+          },
+          "body": {
+            "host": "a",
+            "path": "/api/feed.json"
+          },
+          "body_encoding": "json",
+          "elapsed_ms": 12,
+          "size": 39
+        },
+        "matched_by": null,
+        "mode": "passthrough",
+        "replay_seq": null,
+        "unmatched": false,
+        "client": "",
+        "truncated": false,
+        "encrypted": false,
+        "bytes_up": 0,
+        "bytes_down": 0
+      }
+    }
+  ],
+  "samples": [
+    {
+      "args": [
+        "acct_a",
+        "POST",
+        "api.example.com",
+        "/api/pay",
+        null
+      ],
+      "files": [
+        "acct_a/api.example.com/POST/api/pay/000002.json"
+      ]
+    },
+    {
+      "args": [
+        "acct_a",
+        "GET",
+        "api.example.com",
+        "/v5/suggestions",
+        "GET:api.example.com/v5/suggestions"
+      ],
+      "files": [
+        "acct_a/api.example.com/GET/v5/suggestions/000001.json"
+      ]
+    },
+    {
+      "args": [
+        "acct_a",
+        "GET",
+        "other.example.com",
+        "/v5/suggestions",
+        "GET:*.example.com/v5/*"
+      ],
+      "files": [
+        "acct_a/api.example.com/GET/v5/suggestions/000001.json"
+      ]
+    },
+    {
+      "args": [
+        "acct_a",
+        "GET",
+        "other.example.com",
+        "/v5/suggestions",
+        null
+      ],
+      "files": []
+    },
+    {
+      "args": [
+        "acct_a",
+        "GET",
+        "nowhere.example.com",
+        "/none",
+        "GET:*.example.com/*"
+      ],
+      "files": [
+        "acct_a/api.example.com/GET/v5/suggestions/000001.json",
+        "acct_a/cdn.example.com/GET/img/a.png/000003.json",
+        "acct_a/api.example.com/GET/_root/000004.json",
+        "acct_a/api.example.com/GET/text/000005.json"
+      ]
+    },
+    {
+      "args": [
+        "acct_b",
+        "GET",
+        "c",
+        "/x",
+        "GET:/x"
+      ],
+      "files": [
+        "acct_b/a/GET/x/000001.json",
+        "acct_b/a-b/GET/x/000001.json"
+      ]
+    },
+    {
+      "args": [
+        "acct_b",
+        "GET",
+        "a-b",
+        "/x",
+        "GET:/x"
+      ],
+      "files": [
+        "acct_b/a-b/GET/x/000001.json"
+      ]
+    },
+    {
+      "args": [
+        "acct_b",
+        "GET",
+        "a",
+        "/api/feed.json",
+        null
+      ],
+      "files": [
+        "acct_b/a/GET/api/feed.json/000003.json"
+      ]
+    },
+    {
+      "args": [
+        "nobody",
+        "GET",
+        "a",
+        "/x",
+        "GET:/x"
+      ],
+      "files": []
+    }
+  ]
+}

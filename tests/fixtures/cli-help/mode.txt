@@ -1,0 +1,13 @@
+usage: tunnel mode [-h] [--base BASE] [--json] [--session NAME]
+                   [{passthrough,replay}]
+
+positional arguments:
+  {passthrough,replay}  leave it out to print the mode as it stands
+
+options:
+  -h, --help            show this help message and exit
+  --base BASE           where the admin API answers (default
+                        http://127.0.0.1:8000)
+  --json                print raw JSON, errors included, for piping into jq
+  --session NAME        switch the current session in the same call, so that
+                        `mode replay --session acct_a` is one command

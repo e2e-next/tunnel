@@ -1,0 +1,16 @@
+usage: tunnel ssl [-h] [--base BASE] [--json] {ls,add,rm,on,off,exclude} ...
+
+positional arguments:
+  {ls,add,rm,on,off,exclude}
+    ls                  show both lists and the switch
+    add                 decrypt these hosts
+    rm                  stop decrypting these hosts
+    on                  decrypt the included hosts again
+    off                 tunnel every HTTPS connection through undecrypted
+    exclude             hosts never to decrypt, whatever the include list says
+
+options:
+  -h, --help            show this help message and exit
+  --base BASE           where the admin API answers (default
+                        http://127.0.0.1:8000)
+  --json                print raw JSON, errors included, for piping into jq

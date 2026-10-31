@@ -1,0 +1,38 @@
+{
+  "name": "tunnel-use",
+  "version": "3.0.0",
+  "description": "Local HTTP mock server and HTTPS device proxy, driven by a coding agent over MCP or from a CLI",
+  "keywords": ["mcp", "agent", "mock", "proxy", "https", "record", "replay", "testing", "http", "api", "tunnel"],
+  "homepage": "https://github.com/e2e-next/tunnel",
+  "bugs": "https://github.com/e2e-next/tunnel/issues",
+  "repository": { "type": "git", "url": "git+https://github.com/e2e-next/tunnel.git" },
+  "license": "MIT",
+  "author": "nsoio",
+  "type": "module",
+  "bin": { "tunnel": "dist/cli.js" },
+  "exports": { ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } },
+  "types": "./dist/index.d.ts",
+  "files": ["dist", "assets"],
+  "engines": { "node": ">=22.18.0" },
+  "scripts": {
+    "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsc -p tsconfig.build.json",
+    "prepack": "npm run build",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "node --disable-warning=ExperimentalWarning --import ./tests/support/setup.ts --test --test-reporter=spec \"tests/**/*.test.ts\"",
+    "test:fast": "node --disable-warning=ExperimentalWarning --import ./tests/support/setup.ts --test --test-reporter=spec --test-skip-pattern=\"\\[slow\\]\" \"tests/**/*.test.ts\"",
+    "test:contract": "node --disable-warning=ExperimentalWarning --import ./tests/support/setup.ts --test --test-reporter=spec \"tests/contract/**/*.test.ts\"",
+    "test:file": "node --disable-warning=ExperimentalWarning --import ./tests/support/setup.ts --test --test-reporter=spec",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.ts\"",
+    "check-install": "node --disable-warning=ExperimentalWarning scripts/check-install.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.12",
+    "prettier": "^3.9.10",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.4",
+    "hono": "^4.13.13"
+  }
+}

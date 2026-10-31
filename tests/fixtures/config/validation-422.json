@@ -1,0 +1,7 @@
+{
+  "responses": [
+    {"method": "PATCH", "path": "/__admin__/config", "body": {"ssl_proxying": {"include": "x"}}, "status": 422, "response": {"detail": [{"type": "list_type", "loc": ["body", "ssl_proxying", "include"], "msg": "Input should be a valid list", "input": "x"}]}},
+    {"method": "PATCH", "path": "/__admin__/config", "body": {"ssl_proxying": "x"}, "status": 422, "response": {"detail": [{"type": "model_attributes_type", "loc": ["body", "ssl_proxying"], "msg": "Input should be a valid dictionary or object to extract fields from", "input": "x"}]}},
+    {"method": "PATCH", "path": "/__admin__/config", "body": {"ssl_proxying": {"enabled": null}}, "status": 422, "response": {"detail": [{"type": "bool_type", "loc": ["body", "ssl_proxying", "enabled"], "msg": "Input should be a valid boolean", "input": null}]}}
+  ]
+}

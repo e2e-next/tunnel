@@ -1,0 +1,57 @@
+{
+  "safe_segment": [
+    ["api.example.com", "api.example.com"],
+    ["A-Z_a-z.0-9", "A-Z_a-z.0-9"],
+    ["a b", "a_b"],
+    [".", "_"],
+    ["..", "_"],
+    ["", "_"],
+    ["...", "..."],
+    ["%2F", "_2F"],
+    ["\u00e9", "_"],
+    ["\ud83d\ude00x", "_x"],
+    ["\u00df", "_"],
+    ["\u0130", "_"],
+    ["a:8080", "a_8080"]
+  ],
+  "path_segments": [
+    ["/", ["_root"]],
+    ["", ["_root"]],
+    ["//", ["_root"]],
+    ["/v5/suggestions", ["v5", "suggestions"]],
+    ["/v5/a b/../secrets", ["v5", "a_b", "_", "secrets"]],
+    ["/a/./b", ["a", "_", "b"]],
+    ["/%2F/x", ["_2F", "x"]],
+    ["/api/feed.json", ["api", "feed.json"]],
+    ["x/y/", ["x", "y"]]
+  ],
+  "file_path": [
+    [["acct_a", "get", "API.Example.com:8080", "/x", 7], "acct_a/API.Example.com_8080/GET/x/000007.json"],
+    [["s", "\u00df", "h", "/", 0], "s/h/SS/_root/000000.json"],
+    [["s", "GET", "h", "/a b", 42], "s/h/GET/a_b/000042.json"],
+    [["s", "GET", "h", "/x", 1000000], "s/h/GET/x/1000000.json"],
+    [["s", "GET", "h", "/x", -1], "s/h/GET/x/-00001.json"],
+    [["s", "GET", "h", "/x", -12345], "s/h/GET/x/-12345.json"],
+    [["", "", "", "", 1], "_/_/_/_root/000001.json"]
+  ],
+  "session_name": [
+    [null, {"value": "default"}],
+    ["", {"value": "default"}],
+    ["   ", {"value": "default"}],
+    [" acct_a ", {"value": "acct_a"}],
+    ["\u001cacct", {"value": "acct"}],
+    ["\u0085acct", {"value": "acct"}],
+    ["\ufeffacct", {"error": "'\\ufeffacct' is not a session name; a session is a directory, so letters, digits, dot, dash and underscore are what it can hold"}],
+    ["acct a", {"error": "'acct a' is not a session name; a session is a directory, so letters, digits, dot, dash and underscore are what it can hold"}],
+    ["../etc", {"error": "'../etc' is not a session name; a session is a directory, so letters, digits, dot, dash and underscore are what it can hold"}],
+    ["a/b", {"error": "'a/b' is not a session name; a session is a directory, so letters, digits, dot, dash and underscore are what it can hold"}],
+    [".", {"error": "'.' is not a session name; a session is a directory, so letters, digits, dot, dash and underscore are what it can hold"}],
+    ["..", {"error": "'..' is not a session name; a session is a directory, so letters, digits, dot, dash and underscore are what it can hold"}],
+    ["\u00e9", {"error": "'\u00e9' is not a session name; a session is a directory, so letters, digits, dot, dash and underscore are what it can hold"}],
+    ["it's", {"error": "\"it's\" is not a session name; a session is a directory, so letters, digits, dot, dash and underscore are what it can hold"}],
+    ["tab\there", {"error": "'tab\\there' is not a session name; a session is a directory, so letters, digits, dot, dash and underscore are what it can hold"}],
+    ["\u3000acct\u3000", {"value": "acct"}],
+    ["default", {"value": "default"}],
+    ["A-z_0.9", {"value": "A-z_0.9"}]
+  ]
+}

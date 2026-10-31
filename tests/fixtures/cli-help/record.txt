@@ -1,0 +1,13 @@
+usage: tunnel record [-h] [--base BASE] [--json] {start,stop,status} ...
+
+positional arguments:
+  {start,stop,status}
+    start              keep every passthrough call from here on
+    stop               stop recording; what is on disk stays
+    status             whether recording is on, and how much is recorded
+
+options:
+  -h, --help           show this help message and exit
+  --base BASE          where the admin API answers (default
+                       http://127.0.0.1:8000)
+  --json               print raw JSON, errors included, for piping into jq

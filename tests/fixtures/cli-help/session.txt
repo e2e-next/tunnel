@@ -1,0 +1,10 @@
+usage: tunnel session [-h] [--base BASE] [--json] [NAME]
+
+positional arguments:
+  NAME         switch to this session; leave it out to print the one in hand
+               and what else is on disk
+
+options:
+  -h, --help   show this help message and exit
+  --base BASE  where the admin API answers (default http://127.0.0.1:8000)
+  --json       print raw JSON, errors included, for piping into jq

@@ -1,0 +1,20 @@
+usage: tunnel wait [-h] [--base BASE] [--json] [--count N] [--timeout SECONDS]
+                   [--since SEQ] [-q K=V]
+                   method path
+
+positional arguments:
+  method             HTTP method, e.g. POST
+  path               a path (/api/pay) or a host and path
+                     (api.example.com/api/pay); * is a wildcard in both
+
+options:
+  -h, --help         show this help message and exit
+  --base BASE        where the admin API answers (default
+                     http://127.0.0.1:8000)
+  --json             print raw JSON, errors included, for piping into jq
+  --count N          how many of them to wait for (default 1)
+  --timeout SECONDS  give up after this long and exit 3 (default 10)
+  --since SEQ        only count what arrived after this seq; without it the
+                     whole log counts, including calls made before the wait
+  -q, --query K=V    only count requests whose query carries this value,
+                     repeatable

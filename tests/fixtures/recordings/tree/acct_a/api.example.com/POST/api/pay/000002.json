@@ -1,0 +1,44 @@
+{
+  "seq": 2,
+  "time": "2026-10-11T09:30:00.007",
+  "kind": "http",
+  "request": {
+    "method": "POST",
+    "scheme": "http",
+    "host": "api.example.com",
+    "port": 80,
+    "path": "/api/pay",
+    "query": {},
+    "url": "http://api.example.com/api/pay",
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": {
+      "amount": 12
+    },
+    "body_encoding": "json"
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": {
+      "id": 12345678901234567890,
+      "neg": -98765432109876543210,
+      "small": 7
+    },
+    "body_encoding": "json",
+    "elapsed_ms": 12,
+    "size": 70
+  },
+  "matched_by": null,
+  "mode": "passthrough",
+  "replay_seq": null,
+  "unmatched": false,
+  "client": "",
+  "truncated": false,
+  "encrypted": false,
+  "bytes_up": 0,
+  "bytes_down": 0
+}

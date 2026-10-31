@@ -1,0 +1,11 @@
+usage: tunnel ssl exclude [-h] [--base BASE] [--json] {add,rm} ...
+
+positional arguments:
+  {add,rm}
+    add        never decrypt these hosts
+    rm         drop these from the exclude list
+
+options:
+  -h, --help   show this help message and exit
+  --base BASE  where the admin API answers (default http://127.0.0.1:8000)
+  --json       print raw JSON, errors included, for piping into jq

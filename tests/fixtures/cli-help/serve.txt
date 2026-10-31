@@ -1,0 +1,19 @@
+usage: tunnel serve [-h] [--base BASE] [--json] [--admin-port PORT]
+                    [--proxy-port PORT] [--proxy-host HOST] [--config-dir DIR]
+                    [--background]
+
+options:
+  -h, --help            show this help message and exit
+  --base BASE           where the admin API answers (default
+                        http://127.0.0.1:8000)
+  --json                print raw JSON, errors included, for piping into jq
+  --admin-port, --port PORT
+                        panel and admin API, on 127.0.0.1 (default 8000)
+  --proxy-port PORT     the port devices proxy through (default 8890)
+  --proxy-host HOST     address the proxy port binds (default 0.0.0.0, every
+                        interface)
+  --config-dir DIR      put config, state and data in this one directory
+                        (default: the nearest .tunnel/, else the user
+                        directories)
+  --background          start it in a process of its own and return once it
+                        answers; `tunnel status` and `tunnel stop` follow it

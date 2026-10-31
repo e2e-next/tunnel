@@ -1,0 +1,39 @@
+{
+  "seq": 1,
+  "time": "2026-10-11T09:31:00.000",
+  "kind": "http",
+  "request": {
+    "method": "GET",
+    "scheme": "https",
+    "host": "a-b",
+    "port": 443,
+    "path": "/x",
+    "query": {},
+    "url": "https://a-b/x",
+    "headers": {},
+    "body": null,
+    "body_encoding": null
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": {
+      "host": "a-b",
+      "path": "/x"
+    },
+    "body_encoding": "json",
+    "elapsed_ms": 12,
+    "size": 29
+  },
+  "matched_by": null,
+  "mode": "passthrough",
+  "replay_seq": null,
+  "unmatched": false,
+  "client": "",
+  "truncated": false,
+  "encrypted": false,
+  "bytes_up": 0,
+  "bytes_down": 0
+}

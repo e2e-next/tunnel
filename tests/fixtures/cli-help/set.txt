@@ -1,0 +1,53 @@
+usage: tunnel set [-h] [--base BASE] [--json] [-d JSON] [--script FILE]
+                  [--target URL] [--replay] [--strategy {match,sequence,last}]
+                  [--session NAME] [--merge JSON] [-H 'Name: value']
+                  [--content-type TYPE] [--fault {none,hang,garbage,close}]
+                  [--fault-seconds SECONDS]
+                  [--mode {json,passthrough,script,replay}] [--status STATUS]
+                  [--delay SECONDS] [--desc DESC] [--enable] [--disable]
+                  method path
+
+positional arguments:
+  method                HTTP method, e.g. GET
+  path                  a path (/api/feed) or a host and path
+                        (api.example.com/api/feed); * is a wildcard in both
+
+options:
+  -h, --help            show this help message and exit
+  --base BASE           where the admin API answers (default
+                        http://127.0.0.1:8000)
+  --json                print raw JSON, errors included, for piping into jq
+  -d, --data JSON       the JSON to answer with: literal, or @file
+  --script FILE         a JavaScript or TypeScript file defining handler(ctx),
+                        run per request
+  --target URL          pass through to this base URL or full URL instead of
+                        the request's own origin
+  --replay              answer from the recordings instead of the real server
+  --strategy {match,sequence,last}
+                        which recording replay picks: the one whose query
+                        matches (default), the next one in order, or the
+                        newest
+  --session NAME        pin this endpoint to one recorded session; left out it
+                        follows the current session, and --session '' unpins
+                        it
+  --merge JSON          deep merge this object into the JSON that comes back,
+                        in passthrough and replay; literal JSON or @file
+  -H, --header 'Name: value'
+                        response header, repeatable; these replace the rule's
+                        headers rather than adding to them
+  --content-type TYPE   override the content-type of the response
+  --fault {none,hang,garbage,close}
+                        answer with a fault instead: hang until fault_seconds
+                        then 504, garbage that does not parse as the JSON it
+                        claims, or close the connection with no answer at all
+  --fault-seconds SECONDS
+                        how long --fault hang holds the request before it
+                        answers 504 (default 3600, longer than any client's
+                        timeout)
+  --mode {json,passthrough,script,replay}
+                        set the mode explicitly
+  --status STATUS       the status code to answer with
+  --delay SECONDS       hold the answer back this long
+  --desc DESC           a note, shown by `tunnel ls`
+  --enable
+  --disable

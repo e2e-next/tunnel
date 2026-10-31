@@ -1,0 +1,16 @@
+usage: tunnel recordings [-h] [--base BASE] [--json]
+                         {ls,show,export,import,rm} ...
+
+positional arguments:
+  {ls,show,export,import,rm}
+    ls                  one row per recorded call
+    show                one recorded call in full
+    export              write the recordings out as a directory to commit
+    import              read a directory of recordings back into the server
+    rm                  delete recordings
+
+options:
+  -h, --help            show this help message and exit
+  --base BASE           where the admin API answers (default
+                        http://127.0.0.1:8000)
+  --json                print raw JSON, errors included, for piping into jq

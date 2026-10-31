@@ -1,0 +1,11 @@
+usage: tunnel ca install [-h] [--base BASE] [--json] (--ios-simulator |
+                         --android | --macos)
+
+options:
+  -h, --help       show this help message and exit
+  --base BASE      where the admin API answers (default http://127.0.0.1:8000)
+  --json           print raw JSON, errors included, for piping into jq
+  --ios-simulator  xcrun simctl keychain booted add-root-cert
+  --android        adb push, then install it from the device's settings
+  --macos          security add-trusted-cert; asks for an administrator
+                   password

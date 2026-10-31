@@ -1,0 +1,101 @@
+{
+  "max_requests_history": 42,
+  "auto_record_requests": false,
+  "default_mode": "passthrough",
+  "ssl_proxying": {
+    "enabled": true,
+    "include": [],
+    "exclude": []
+  },
+  "allow_clients": [],
+  "redact_headers": [
+    "authorization",
+    "cookie",
+    "set-cookie",
+    "x-api-key",
+    "proxy-authorization"
+  ],
+  "recording": {
+    "active": true
+  },
+  "session": "acct_a",
+  "replay_marker": true,
+  "request_configs": {
+    "GET:/api/feed": {
+      "request_key": "GET:/api/feed",
+      "mode": "passthrough",
+      "json_response": {
+        "message": "Tunnel response"
+      },
+      "status_code": 200,
+      "enabled": true,
+      "description": "",
+      "merge_json": {},
+      "headers": {},
+      "target": "https://api.example.com/v5/feed",
+      "response_delay": 1.0,
+      "script": "",
+      "replay_session": "",
+      "replay_strategy": "match",
+      "fault": "none",
+      "fault_seconds": 3600.0
+    },
+    "GET:/api/kept": {
+      "request_key": "GET:/api/kept",
+      "mode": "passthrough",
+      "json_response": {
+        "message": "Tunnel response"
+      },
+      "status_code": 200,
+      "enabled": true,
+      "description": "",
+      "merge_json": {},
+      "headers": {},
+      "target": "https://keep.example.com",
+      "response_delay": 0.0,
+      "script": "",
+      "replay_session": "",
+      "replay_strategy": "match",
+      "fault": "none",
+      "fault_seconds": 3600.0
+    },
+    "GET:/api/json": {
+      "request_key": "GET:/api/json",
+      "mode": "json",
+      "json_response": {
+        "v": 1
+      },
+      "status_code": 200,
+      "enabled": true,
+      "description": "",
+      "merge_json": {},
+      "headers": {},
+      "target": "",
+      "response_delay": 0.0,
+      "script": "",
+      "replay_session": "",
+      "replay_strategy": "match",
+      "fault": "none",
+      "fault_seconds": 3600.0
+    },
+    "GET:/api/poll": {
+      "request_key": "GET:/api/poll",
+      "mode": "replay",
+      "json_response": {
+        "message": "Tunnel response"
+      },
+      "status_code": 200,
+      "enabled": true,
+      "description": "",
+      "merge_json": {},
+      "headers": {},
+      "target": "",
+      "response_delay": 0.0,
+      "script": "",
+      "replay_session": "acct_b",
+      "replay_strategy": "sequence",
+      "fault": "none",
+      "fault_seconds": 3600.0
+    }
+  }
+}

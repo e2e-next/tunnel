@@ -1,0 +1,45 @@
+{
+  "default_proxy_target": "http://127.0.0.1:8080",
+  "max_requests_history": 42,
+  "auto_record_requests": false,
+  "default_mode": "proxy",
+  "recording": {
+    "active": true,
+    "session": "acct_a"
+  },
+  "request_configs": {
+    "GET:/api/old": {
+      "request_key": "GET:/api/old",
+      "mode": "file",
+      "file_path": "data/old.json",
+      "auto_file_path": true
+    },
+    "GET:/api/feed": {
+      "request_key": "GET:/api/feed",
+      "mode": "proxy",
+      "custom_proxy_target": "https://api.example.com/v5/feed",
+      "json_base_file": "data/base.json",
+      "response_delay": 1
+    },
+    "GET:/api/kept": {
+      "request_key": "GET:/api/kept",
+      "mode": "passthrough",
+      "target": "https://keep.example.com",
+      "custom_proxy_target": "https://dropped.example.com"
+    },
+    "GET:/api/json": {
+      "request_key": "GET:/api/json",
+      "mode": "json",
+      "json_response": {
+        "v": 1
+      },
+      "replay_session": "default"
+    },
+    "GET:/api/poll": {
+      "request_key": "GET:/api/poll",
+      "mode": "replay",
+      "replay_session": "acct_b",
+      "replay_strategy": "sequence"
+    }
+  }
+}

@@ -1,0 +1,9 @@
+usage: tunnel ssl rm [-h] [--base BASE] [--json] PATTERN [PATTERN ...]
+
+positional arguments:
+  PATTERN
+
+options:
+  -h, --help   show this help message and exit
+  --base BASE  where the admin API answers (default http://127.0.0.1:8000)
+  --json       print raw JSON, errors included, for piping into jq

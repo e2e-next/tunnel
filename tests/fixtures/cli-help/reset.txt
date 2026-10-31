@@ -1,0 +1,13 @@
+usage: tunnel reset [-h] [--base BASE] [--json] [--state] [--requests]
+                    [method] [path]
+
+positional arguments:
+  method       only this endpoint's state
+  path
+
+options:
+  -h, --help   show this help message and exit
+  --base BASE  where the admin API answers (default http://127.0.0.1:8000)
+  --json       print raw JSON, errors included, for piping into jq
+  --state      clear script ctx.state and the replay counters (the default)
+  --requests   clear the request log

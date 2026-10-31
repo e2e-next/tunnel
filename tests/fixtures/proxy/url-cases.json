@@ -1,0 +1,380 @@
+{
+  "targets": [
+    {
+      "target": "http://api.example.com/feed",
+      "scheme": "http",
+      "netloc": "api.example.com",
+      "path": "/feed",
+      "query": "",
+      "absolute": true
+    },
+    {
+      "target": "http://API.Example.com/a/../b?x=1&y=&z",
+      "scheme": "http",
+      "netloc": "API.Example.com",
+      "path": "/a/../b",
+      "query": "x=1&y=&z",
+      "absolute": true
+    },
+    {
+      "target": "HTTPS://h/",
+      "scheme": "https",
+      "netloc": "h",
+      "path": "/",
+      "query": "",
+      "absolute": true
+    },
+    {
+      "target": "http://h",
+      "scheme": "http",
+      "netloc": "h",
+      "path": "",
+      "query": "",
+      "absolute": true
+    },
+    {
+      "target": "http://h/p?q=1#frag",
+      "scheme": "http",
+      "netloc": "h",
+      "path": "/p",
+      "query": "q=1",
+      "absolute": true
+    },
+    {
+      "target": "http://h/p??a=1",
+      "scheme": "http",
+      "netloc": "h",
+      "path": "/p",
+      "query": "?a=1",
+      "absolute": true
+    },
+    {
+      "target": "http://h/p#frag?notquery",
+      "scheme": "http",
+      "netloc": "h",
+      "path": "/p",
+      "query": "",
+      "absolute": true
+    },
+    {
+      "target": "http://h/ü/é",
+      "scheme": "http",
+      "netloc": "h",
+      "path": "/ü/é",
+      "query": "",
+      "absolute": true
+    },
+    {
+      "target": "http://[::1]:8080/p",
+      "scheme": "http",
+      "netloc": "[::1]:8080",
+      "path": "/p",
+      "query": "",
+      "absolute": true
+    },
+    {
+      "target": "http://h:80/p",
+      "scheme": "http",
+      "netloc": "h:80",
+      "path": "/p",
+      "query": "",
+      "absolute": true
+    },
+    {
+      "target": "http://user@h/p",
+      "scheme": "http",
+      "netloc": "user@h",
+      "path": "/p",
+      "query": "",
+      "absolute": true
+    },
+    {
+      "target": "/only/path?q=1",
+      "scheme": "",
+      "netloc": "",
+      "path": "/only/path",
+      "query": "q=1",
+      "absolute": false
+    },
+    {
+      "target": "/",
+      "scheme": "",
+      "netloc": "",
+      "path": "/",
+      "query": "",
+      "absolute": false
+    },
+    {
+      "target": "*",
+      "scheme": "",
+      "netloc": "",
+      "path": "*",
+      "query": "",
+      "absolute": false
+    },
+    {
+      "target": "localhost:3000/x",
+      "scheme": "localhost",
+      "netloc": "",
+      "path": "3000/x",
+      "query": "",
+      "absolute": false
+    },
+    {
+      "target": "inner.example.com:443",
+      "scheme": "inner.example.com",
+      "netloc": "",
+      "path": "443",
+      "query": "",
+      "absolute": false
+    },
+    {
+      "target": "[::1]:443",
+      "scheme": "",
+      "netloc": "",
+      "path": "[::1]:443",
+      "query": "",
+      "absolute": false
+    },
+    {
+      "target": "mailto:x",
+      "scheme": "mailto",
+      "netloc": "",
+      "path": "x",
+      "query": "",
+      "absolute": false
+    },
+    {
+      "target": "//h/p",
+      "scheme": "",
+      "netloc": "h",
+      "path": "/p",
+      "query": "",
+      "absolute": false
+    },
+    {
+      "target": "http://h/p?",
+      "scheme": "http",
+      "netloc": "h",
+      "path": "/p",
+      "query": "",
+      "absolute": true
+    },
+    {
+      "target": "http://h/a b",
+      "scheme": "http",
+      "netloc": "h",
+      "path": "/a b",
+      "query": "",
+      "absolute": true
+    },
+    {
+      "target": "",
+      "scheme": "",
+      "netloc": "",
+      "path": "",
+      "query": "",
+      "absolute": false
+    }
+  ],
+  "authorities": [
+    {
+      "authority": "api.example.com:443",
+      "defaultPort": 443,
+      "host": "api.example.com",
+      "port": 443
+    },
+    {
+      "authority": "api.example.com",
+      "defaultPort": 443,
+      "host": "api.example.com",
+      "port": 443
+    },
+    {
+      "authority": "API.Example.com:8443",
+      "defaultPort": 443,
+      "host": "api.example.com",
+      "port": 8443
+    },
+    {
+      "authority": "[::1]:443",
+      "defaultPort": 443,
+      "host": "::1",
+      "port": 443
+    },
+    {
+      "authority": "[::1]",
+      "defaultPort": 443,
+      "host": "::1",
+      "port": 443
+    },
+    {
+      "authority": "[::1]",
+      "defaultPort": 0,
+      "host": "::1",
+      "port": 0
+    },
+    {
+      "authority": "host:abc",
+      "defaultPort": 443,
+      "host": "host:abc",
+      "port": 443
+    },
+    {
+      "authority": "h:",
+      "defaultPort": 443,
+      "host": "h:",
+      "port": 443
+    },
+    {
+      "authority": "::1",
+      "defaultPort": 443,
+      "host": ":",
+      "port": 1
+    },
+    {
+      "authority": "  h:8080  ",
+      "defaultPort": 443,
+      "host": "h",
+      "port": 8080
+    },
+    {
+      "authority": "h:0",
+      "defaultPort": 443,
+      "host": "h",
+      "port": 0
+    },
+    {
+      "authority": "h:65536",
+      "defaultPort": 443,
+      "host": "h",
+      "port": 65536
+    },
+    {
+      "authority": "",
+      "defaultPort": 443,
+      "host": "",
+      "port": 443
+    },
+    {
+      "authority": "[::1]:",
+      "defaultPort": 443,
+      "host": "::1",
+      "port": 443
+    },
+    {
+      "authority": "[::1]:abc",
+      "defaultPort": 443,
+      "raises": "Error"
+    },
+    {
+      "authority": "[2001:db8::1]:12ab",
+      "defaultPort": 443,
+      "raises": "Error"
+    }
+  ],
+  "queries": [
+    {
+      "query": "a=1&b=2",
+      "parsed": {
+        "a": "1",
+        "b": "2"
+      }
+    },
+    {
+      "query": "a=&b",
+      "parsed": {
+        "a": "",
+        "b": ""
+      }
+    },
+    {
+      "query": "a=1&a=2",
+      "parsed": {
+        "a": "2"
+      }
+    },
+    {
+      "query": "a=1=2",
+      "parsed": {
+        "a": "1=2"
+      }
+    },
+    {
+      "query": "&&a=1&",
+      "parsed": {
+        "a": "1"
+      }
+    },
+    {
+      "query": "a%20b=c+d",
+      "parsed": {
+        "a b": "c d"
+      }
+    },
+    {
+      "query": "a=%E4%B8%AD",
+      "parsed": {
+        "a": "中"
+      }
+    },
+    {
+      "query": "a=%C3%28",
+      "parsed": {
+        "a": "�("
+      }
+    },
+    {
+      "query": "a=%EF%BB%BFx",
+      "parsed": {
+        "a": "﻿x"
+      }
+    },
+    {
+      "query": "%zz=%zz",
+      "parsed": {
+        "%zz": "%zz"
+      }
+    },
+    {
+      "query": "a=%2",
+      "parsed": {
+        "a": "%2"
+      }
+    },
+    {
+      "query": "=x",
+      "parsed": {
+        "": "x"
+      }
+    },
+    {
+      "query": "a",
+      "parsed": {
+        "a": ""
+      }
+    },
+    {
+      "query": "",
+      "parsed": {}
+    },
+    {
+      "query": "a=1;b=2",
+      "parsed": {
+        "a": "1;b=2"
+      }
+    },
+    {
+      "query": "__proto__=x",
+      "parsed": {
+        "__proto__": "x"
+      }
+    },
+    {
+      "query": "?a=1",
+      "parsed": {
+        "?a": "1"
+      }
+    }
+  ]
+}

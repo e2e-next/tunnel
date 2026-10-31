@@ -1,0 +1,181 @@
+[
+  {
+    "raw": "",
+    "body": null,
+    "body_encoding": null,
+    "truncated": false,
+    "decoded": "",
+    "text": ""
+  },
+  {
+    "raw": "eyJhIjogMX0=",
+    "body": {
+      "a": 1
+    },
+    "body_encoding": "json",
+    "truncated": false,
+    "decoded": "eyJhIjogMX0=",
+    "text": "{\"a\": 1}"
+  },
+  {
+    "raw": "IAp7ImEiOiBbMSwgeyJiIjogbnVsbH1dLCAiYyI6ICJ4LCB5OiB6In0J",
+    "body": {
+      "a": [
+        1,
+        {
+          "b": null
+        }
+      ],
+      "c": "x, y: z"
+    },
+    "body_encoding": "json",
+    "truncated": false,
+    "decoded": "eyJhIjogWzEsIHsiYiI6IG51bGx9XSwgImMiOiAieCwgeTogeiJ9",
+    "text": "{\"a\": [1, {\"b\": null}], \"c\": \"x, y: z\"}"
+  },
+  {
+    "raw": "ImhlbGxvIg==",
+    "body": "hello",
+    "body_encoding": "json",
+    "truncated": false,
+    "decoded": "ImhlbGxvIg==",
+    "text": "\"hello\""
+  },
+  {
+    "raw": "NDI=",
+    "body": 42,
+    "body_encoding": "json",
+    "truncated": false,
+    "decoded": "NDI=",
+    "text": "42"
+  },
+  {
+    "raw": "dHJ1ZQ==",
+    "body": true,
+    "body_encoding": "json",
+    "truncated": false,
+    "decoded": "dHJ1ZQ==",
+    "text": "true"
+  },
+  {
+    "raw": "W10=",
+    "body": [],
+    "body_encoding": "json",
+    "truncated": false,
+    "decoded": "W10=",
+    "text": "[]"
+  },
+  {
+    "raw": "eyLDqSI6ICLml6XmnKwiLCAiaWQiOiAxMjM0NTY3ODkwMTIzNDU2Nzg5MH0=",
+    "body": {
+      "é": "日本",
+      "id": 12345678901234567890
+    },
+    "body_encoding": "json",
+    "truncated": false,
+    "decoded": "eyLDqSI6ICLml6XmnKwiLCAiaWQiOiAxMjM0NTY3ODkwMTIzNDU2Nzg5MH0=",
+    "text": "{\"é\": \"日本\", \"id\": 12345678901234567890}"
+  },
+  {
+    "raw": "eyJhIjogIlx1ZDgzZFx1ZGUwMCJ9",
+    "body": {
+      "a": "😀"
+    },
+    "body_encoding": "json",
+    "truncated": false,
+    "decoded": "eyJhIjogIvCfmIAifQ==",
+    "text": "{\"a\": \"😀\"}"
+  },
+  {
+    "raw": "eyJhIjogMSwgImEiOiAyfQ==",
+    "body": {
+      "a": 2
+    },
+    "body_encoding": "json",
+    "truncated": false,
+    "decoded": "eyJhIjogMn0=",
+    "text": "{\"a\": 2}"
+  },
+  {
+    "raw": "eyJfX3Byb3RvX18iOiB7IngiOiAxfX0=",
+    "body": {
+      "__proto__": {
+        "x": 1
+      }
+    },
+    "body_encoding": "json",
+    "truncated": false,
+    "decoded": "eyJfX3Byb3RvX18iOiB7IngiOiAxfX0=",
+    "text": "{\"__proto__\": {\"x\": 1}}"
+  },
+  {
+    "raw": "aMOpbGxv",
+    "body": "héllo",
+    "body_encoding": "text",
+    "truncated": false,
+    "decoded": "aMOpbGxv",
+    "text": "héllo"
+  },
+  {
+    "raw": "77u/eyJhIjogMX0=",
+    "body": {
+      "a": 1
+    },
+    "body_encoding": "json",
+    "truncated": false,
+    "decoded": "eyJhIjogMX0=",
+    "text": "{\"a\": 1}"
+  },
+  {
+    "raw": "77u/cGxhaW4=",
+    "body": "﻿plain",
+    "body_encoding": "text",
+    "truncated": false,
+    "decoded": "77u/cGxhaW4=",
+    "text": "﻿plain"
+  },
+  {
+    "raw": "iVBORw0KGgoA/w==",
+    "body": "iVBORw0KGgoA/w==",
+    "body_encoding": "base64",
+    "truncated": false,
+    "decoded": "iVBORw0KGgoA/w==",
+    "text": "iVBORw0KGgoA/w=="
+  },
+  {
+    "raw": "e25vdCBqc29u",
+    "body": "{not json",
+    "body_encoding": "text",
+    "truncated": false,
+    "decoded": "e25vdCBqc29u",
+    "text": "{not json"
+  },
+  {
+    "raw": "//79",
+    "body": "//79",
+    "body_encoding": "base64",
+    "truncated": false,
+    "decoded": "//79",
+    "text": "//79"
+  },
+  {
+    "raw": "eyJzIjogImxpbmVcbmJyZWFrXHUyMDI4c2VwIn0=",
+    "body": {
+      "s": "line\nbreak sep"
+    },
+    "body_encoding": "json",
+    "truncated": false,
+    "decoded": "eyJzIjogImxpbmVcbmJyZWFr4oCoc2VwIn0=",
+    "text": "{\"s\": \"line\\nbreak sep\"}"
+  },
+  {
+    "raw": "eyJrIjogIlx1MDAxZlx1MDA3ZiJ9",
+    "body": {
+      "k": "\u001f"
+    },
+    "body_encoding": "json",
+    "truncated": false,
+    "decoded": "eyJrIjogIlx1MDAxZn8ifQ==",
+    "text": "{\"k\": \"\\u001f\"}"
+  }
+]

@@ -1,0 +1,24 @@
+{
+  "max_requests_history": 1000,
+  "auto_record_requests": true,
+  "default_mode": "passthrough",
+  "ssl_proxying": {
+    "enabled": true,
+    "include": [],
+    "exclude": []
+  },
+  "allow_clients": [],
+  "redact_headers": [
+    "authorization",
+    "cookie",
+    "set-cookie",
+    "x-api-key",
+    "proxy-authorization"
+  ],
+  "recording": {
+    "active": false
+  },
+  "session": "default",
+  "replay_marker": true,
+  "request_configs": {}
+}

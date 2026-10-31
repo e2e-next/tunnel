@@ -1,0 +1,517 @@
+{
+  "initialize": {
+    "protocolVersion": "2025-06-18",
+    "capabilities": {
+      "tools": {}
+    },
+    "serverInfo": {
+      "name": "tunnel"
+    }
+  },
+  "tools/list": {
+    "tools": [
+      {
+        "name": "status",
+        "description": "Whether tunnel is up and how it is set right now: version, the three directories, how many rules and logged requests it holds, the session in hand, whether recording is on, the proxy address a device points at, the CA fingerprint, and what every session on disk holds. Make this the first call.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "guide",
+        "description": "tunnel's AGENTS.md, the copy this version ships: the handler(ctx) API a script rule is written against, how a request key is matched, how replay picks a recording, and the steps of a test run. Read it before writing rules. Needs no running server.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "list_mocks",
+        "description": "Every rule as it stands, whole, in the shape apply_scenario takes back — so this is also how a set of rules is exported. A key narrows it to one.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "description": "a rule key as list_mocks reports it, METHOD:/path or METHOD:host/path"
+            }
+          }
+        }
+      },
+      {
+        "name": "set_mock",
+        "description": "Configure what one endpoint answers; only the fields passed change. Give exactly one source — json_response, json_file, script, script_file, target or replay — and it settles the mode. Everything else shapes whatever that mode answers.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "description": "HTTP method, e.g. GET"
+            },
+            "path": {
+              "type": "string",
+              "description": "a path (/api/feed), or a host and path (api.example.com/api/feed); * is a wildcard in either"
+            },
+            "json_response": {
+              "type": [
+                "object",
+                "array"
+              ],
+              "description": "the JSON body to answer with; sets mode json"
+            },
+            "json_file": {
+              "type": "string",
+              "description": "a file holding that JSON, read here and sent inline; sets mode json"
+            },
+            "script": {
+              "type": "string",
+              "description": "JavaScript or TypeScript defining handler(ctx), run per request; sets mode script. The guide tool has the ctx API"
+            },
+            "script_file": {
+              "type": "string",
+              "description": "a file holding that script, read here and sent inline; sets mode script"
+            },
+            "target": {
+              "type": "string",
+              "description": "pass through to this base URL or full URL instead of the request's own origin; sets mode passthrough"
+            },
+            "replay": {
+              "type": "boolean",
+              "description": "answer from the recordings instead of the real server; sets mode replay"
+            },
+            "mode": {
+              "type": "string",
+              "description": "set the mode outright; wins over the one a source implies",
+              "enum": [
+                "json",
+                "passthrough",
+                "script",
+                "replay"
+              ]
+            },
+            "status_code": {
+              "type": "integer",
+              "description": "the status code to answer with"
+            },
+            "delay": {
+              "type": "number",
+              "description": "hold the answer back this many seconds"
+            },
+            "headers": {
+              "type": "object",
+              "description": "response headers; these replace the rule's headers rather than adding to them",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "content_type": {
+              "type": "string",
+              "description": "the content type of the response, folded into headers"
+            },
+            "merge": {
+              "type": "object",
+              "description": "deep merged into the JSON that comes back, in passthrough and replay"
+            },
+            "fault": {
+              "type": "string",
+              "description": "answer wrongly on purpose: hang holds the request for fault_seconds then 504, garbage does not parse as the JSON it claims, close drops the connection unanswered",
+              "enum": [
+                "none",
+                "hang",
+                "garbage",
+                "close"
+              ]
+            },
+            "fault_seconds": {
+              "type": "number",
+              "description": "how long a hang fault holds the request"
+            },
+            "strategy": {
+              "type": "string",
+              "description": "which recording replay picks: the one whose query matches, the next in order, or the newest",
+              "enum": [
+                "match",
+                "sequence",
+                "last"
+              ]
+            },
+            "session": {
+              "type": "string",
+              "description": "pin this rule to one recorded session; empty follows the current one"
+            },
+            "enabled": {
+              "type": "boolean",
+              "description": "false parks the rule without deleting it"
+            },
+            "description": {
+              "type": "string",
+              "description": "a note, shown by list_mocks"
+            }
+          },
+          "required": [
+            "method",
+            "path"
+          ]
+        }
+      },
+      {
+        "name": "delete_mock",
+        "description": "Delete one rule. The request log is left alone.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "description": "a rule key as list_mocks reports it, METHOD:/path or METHOD:host/path"
+            }
+          },
+          "required": [
+            "key"
+          ]
+        }
+      },
+      {
+        "name": "apply_scenario",
+        "description": "Apply a set of rules in one call, all of them or none of them: a scenario file on disk, or the scenario itself. Give exactly one of the two.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string",
+              "description": "a scenario file; its script_file and json_file are resolved beside it and sent inline"
+            },
+            "scenario": {
+              "type": "object",
+              "description": "the scenario itself, as {\"mocks\": [...]} with an optional \"config\""
+            },
+            "replace": {
+              "type": "boolean",
+              "description": "clear the rules configured now first"
+            }
+          }
+        }
+      },
+      {
+        "name": "list_requests",
+        "description": "What the client actually called: one row per endpoint with counts, or one row per request with each. unmatched answers 'what have I not mocked yet', since answers 'what arrived after that seq'.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "each": {
+              "type": "boolean",
+              "description": "one row per request instead of the aggregate"
+            },
+            "key": {
+              "type": "string",
+              "description": "only this rule key; wildcards allowed"
+            },
+            "host": {
+              "type": "string",
+              "description": "only this host; * is a wildcard"
+            },
+            "since": {
+              "type": "integer",
+              "description": "only what arrived after this seq"
+            },
+            "last": {
+              "type": "integer",
+              "description": "only the last N entries"
+            },
+            "unmatched": {
+              "type": "boolean",
+              "description": "only requests no rule answered"
+            },
+            "encrypted": {
+              "type": "boolean",
+              "description": "only tunnels that were not decrypted"
+            },
+            "q": {
+              "type": "string",
+              "description": "keyword: host, path, query, status, rule"
+            },
+            "q_body": {
+              "type": "boolean",
+              "description": "let the keyword search the bodies too"
+            }
+          }
+        }
+      },
+      {
+        "name": "get_request",
+        "description": "One call in full: headers and bodies, request and response. Header values that carry a session come back [REDACTED] unless raw is set.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "seq": {
+              "type": "integer",
+              "description": "the seq from list_requests with each"
+            },
+            "raw": {
+              "type": "boolean",
+              "description": "show header values instead of [REDACTED]"
+            }
+          },
+          "required": [
+            "seq"
+          ]
+        }
+      },
+      {
+        "name": "wait_for_request",
+        "description": "Block until the client has made this call, instead of sleeping and hoping. Running out of time is not an error: the answer says timed_out and which seqs were seen.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "description": "HTTP method, e.g. POST"
+            },
+            "path": {
+              "type": "string",
+              "description": "a path (/api/pay), or a host and path (api.example.com/api/pay); * is a wildcard in either"
+            },
+            "count": {
+              "type": "integer",
+              "description": "how many matching calls to wait for (default 1)"
+            },
+            "since": {
+              "type": "integer",
+              "description": "only count what arrived after this seq; without it the whole log counts, calls made before the wait included"
+            },
+            "timeout": {
+              "type": "number",
+              "description": "give up after this many seconds (default 10, at most 300). Your own client may time out sooner, so keep a long wait within whatever it allows"
+            },
+            "q": {
+              "type": "array",
+              "description": "name=value, repeatable: only count calls whose query carries this value",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "method",
+            "path"
+          ]
+        }
+      },
+      {
+        "name": "reset",
+        "description": "Clear what one test case leaves for the next: script ctx.state and the replay counters, and with requests the request log as well. Neither flag means the state alone.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "description": "only this rule's state, as a rule key; without it, every rule's"
+            },
+            "state": {
+              "type": "boolean",
+              "description": "clear ctx.state and the replay counters (the default)"
+            },
+            "requests": {
+              "type": "boolean",
+              "description": "clear the request log"
+            }
+          }
+        }
+      },
+      {
+        "name": "set_config",
+        "description": "The switches a whole run is set by: how an endpoint with no rule is answered, which session recording and replay use, and what the request log keeps. Only the fields passed change.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "default_mode": {
+              "type": "string",
+              "description": "how an endpoint with no rule of its own is answered: reach the server the client was calling, or answer from the recordings",
+              "enum": [
+                "passthrough",
+                "replay"
+              ]
+            },
+            "session": {
+              "type": "string",
+              "description": "which recordings this run writes and reads; one switch moves a run onto another account"
+            },
+            "max_requests_history": {
+              "type": "integer",
+              "description": "how many requests the log keeps"
+            },
+            "auto_record_requests": {
+              "type": "boolean",
+              "description": "whether requests reach the log at all"
+            },
+            "allow_clients": {
+              "type": "array",
+              "description": "addresses or CIDR ranges the proxy port accepts; empty means this machine and the private network ranges",
+              "items": {
+                "type": "string"
+              }
+            },
+            "redact_headers": {
+              "type": "array",
+              "description": "header names whose values get_request hides",
+              "items": {
+                "type": "string"
+              }
+            },
+            "replay_marker": {
+              "type": "boolean",
+              "description": "whether a replayed answer says so, with an x-tunnel-replay header"
+            }
+          }
+        }
+      },
+      {
+        "name": "decrypt",
+        "description": "Which hosts the proxy decrypts. Nothing HTTPS is read until its host is on the include list, so this comes before any rule for one. remove takes hosts off again, exclude edits the list that wins, enabled is the switch over both.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "hosts": {
+              "type": "array",
+              "description": "host or host:port entries; * is a wildcard in the host, and no port means any port",
+              "items": {
+                "type": "string"
+              }
+            },
+            "remove": {
+              "type": "boolean",
+              "description": "take these off the list instead of putting them on; one that is not there is an error"
+            },
+            "exclude": {
+              "type": "boolean",
+              "description": "edit the exclude list rather than include. exclude wins, and is where an SDK that pins its certificate goes so that it keeps working"
+            },
+            "enabled": {
+              "type": "boolean",
+              "description": "the master switch: off decrypts nothing, however long the include list is"
+            }
+          }
+        }
+      },
+      {
+        "name": "record",
+        "description": "Keep the calls that reach the real server, to replay later. One switch over all passthrough traffic rather than a mode a rule is in: start it, stop it, or ask how it stands.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "description": "start recording, stop it, or report whether it is on and how much it has",
+              "enum": [
+                "start",
+                "stop",
+                "status"
+              ]
+            },
+            "session": {
+              "type": "string",
+              "description": "record into this session, moving the run onto it; with start only"
+            }
+          },
+          "required": [
+            "action"
+          ]
+        }
+      },
+      {
+        "name": "list_recordings",
+        "description": "What has been recorded: one row per call, carrying the session and seq get_recording takes. This is what a rule in replay mode has to choose between.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "session": {
+              "type": "string",
+              "description": "only this session; without it, every one"
+            },
+            "key": {
+              "type": "string",
+              "description": "only this rule key; wildcards allowed"
+            },
+            "host": {
+              "type": "string",
+              "description": "only this host; * is a wildcard"
+            }
+          }
+        }
+      },
+      {
+        "name": "get_recording",
+        "description": "One recorded call in full, headers and bodies. Read one before writing a script around ctx.recorded(): this is the shape that hands back.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "session": {
+              "type": "string",
+              "description": "the session, as list_recordings reports it"
+            },
+            "seq": {
+              "type": "integer",
+              "description": "the seq, as list_recordings reports it"
+            },
+            "raw": {
+              "type": "boolean",
+              "description": "show header values instead of [REDACTED]"
+            }
+          },
+          "required": [
+            "session",
+            "seq"
+          ]
+        }
+      },
+      {
+        "name": "check",
+        "description": "Send one real request through the proxy port and show what came back, verified against tunnel's own CA — the way a device's request arrives. How a rule or a script is proved before anything is told to trust it.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "description": "HTTP method, e.g. GET"
+            },
+            "url": {
+              "type": "string",
+              "description": "the full URL the client would call, scheme and all"
+            },
+            "query": {
+              "type": "array",
+              "description": "name=value, repeatable: added to whatever query the URL already carries",
+              "items": {
+                "type": "string"
+              }
+            },
+            "data": {
+              "type": "string",
+              "description": "a request body: JSON written out, @path to read it from a file here, or plain text"
+            }
+          },
+          "required": [
+            "method",
+            "url"
+          ]
+        }
+      }
+    ]
+  },
+  "server/discover": {
+    "resultType": "complete",
+    "supportedVersions": [
+      "2026-07-28",
+      "2025-11-25"
+    ],
+    "capabilities": {
+      "tools": {}
+    },
+    "_meta": {
+      "io.modelcontextprotocol/serverInfo": {
+        "name": "tunnel"
+      }
+    },
+    "instructions": "Call the guide tool before writing rules: it returns tunnel's AGENTS.md, which covers the handler(ctx) API, how a rule key is matched and how replay chooses a recording — the things these schemas cannot say."
+  }
+}

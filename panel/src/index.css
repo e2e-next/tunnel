@@ -1,0 +1,14 @@
+@import 'tailwindcss';
+
+@font-face {
+  font-family: 'InterVariable';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('./fonts/InterVariable-latin.woff2') format('woff2');
+}
+
+@theme {
+  --font-sans: 'InterVariable', ui-sans-serif, system-ui, sans-serif;
+  --font-sans--font-feature-settings: 'cv11';
+}

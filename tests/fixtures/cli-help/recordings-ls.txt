@@ -1,0 +1,10 @@
+usage: tunnel recordings ls [-h] [--base BASE] [--json] [--session NAME]
+                            [--key KEY] [--host HOST]
+
+options:
+  -h, --help      show this help message and exit
+  --base BASE     where the admin API answers (default http://127.0.0.1:8000)
+  --json          print raw JSON, errors included, for piping into jq
+  --session NAME  only this session (default: all)
+  --key KEY       only this rule key, e.g. GET:api.example.com/api/feed
+  --host HOST     only this host; * is a wildcard

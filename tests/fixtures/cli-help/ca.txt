@@ -1,0 +1,15 @@
+usage: tunnel ca [-h] [--base BASE] [--json] {export,info,reset,install} ...
+
+positional arguments:
+  {export,info,reset,install}
+    export              write the CA certificate to a file
+    info                fingerprint, validity and where the CA lives
+    reset               generate a new CA; every device has to install it
+                        again
+    install             install the CA with the platform's own tool
+
+options:
+  -h, --help            show this help message and exit
+  --base BASE           where the admin API answers (default
+                        http://127.0.0.1:8000)
+  --json                print raw JSON, errors included, for piping into jq

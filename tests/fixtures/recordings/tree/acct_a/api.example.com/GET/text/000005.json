@@ -1,0 +1,36 @@
+{
+  "seq": 5,
+  "time": "2026-10-11T09:30:00.007",
+  "kind": "http",
+  "request": {
+    "method": "GET",
+    "scheme": "http",
+    "host": "api.example.com",
+    "port": 80,
+    "path": "/text",
+    "query": {},
+    "url": "http://api.example.com/text",
+    "headers": {},
+    "body": null,
+    "body_encoding": null
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/plain"
+    },
+    "body": "plain words\n\ttab 😀",
+    "body_encoding": "text",
+    "elapsed_ms": 12,
+    "size": 21
+  },
+  "matched_by": null,
+  "mode": "passthrough",
+  "replay_seq": null,
+  "unmatched": false,
+  "client": "",
+  "truncated": false,
+  "encrypted": false,
+  "bytes_up": 0,
+  "bytes_down": 0
+}

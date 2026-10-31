@@ -1,0 +1,13 @@
+usage: tunnel recordings show [-h] [--base BASE] [--json] [--session NAME]
+                              [--raw]
+                              seq
+
+positional arguments:
+  seq             the seq from `tunnel recordings ls`
+
+options:
+  -h, --help      show this help message and exit
+  --base BASE     where the admin API answers (default http://127.0.0.1:8000)
+  --json          print raw JSON, errors included, for piping into jq
+  --session NAME  which session (default: the one being recorded)
+  --raw           print header values instead of [REDACTED]

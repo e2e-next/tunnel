@@ -1,0 +1,21 @@
+<!doctype html>
+<!--
+  The dev server's page, and only that: `npm run dev` has to serve something.
+
+  What ships is the shell page shellPage() writes, in ../src/app.ts; the build
+  entry stays src/main.tsx, so nothing here ends up in ../assets/panel/. The
+  <html> class is the one the real shell page carries.
+-->
+<html lang="en" class="text-zinc-950 antialiased lg:bg-zinc-100">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- No icon to fetch: the browser would ask for /favicon.ico and log the 404 -->
+    <link rel="icon" href="data:," />
+    <title>tunnel</title>
+  </head>
+  <body>
+    <div id="panel"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

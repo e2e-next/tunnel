@@ -1,0 +1,18 @@
+[
+  [
+    "warning",
+    "Global default_mode \"proxy\" is no longer offered; falling back to \"passthrough\""
+  ],
+  [
+    "info",
+    "Session \"acct_a\" was the recording switch's; it is the current session now, which replay reads as well"
+  ],
+  [
+    "warning",
+    "Skipping GET:/api/old: response mode \"file\" was removed. Serve the payload with `tunnel set -d @file` instead."
+  ],
+  [
+    "info",
+    "These rules replayed the default session because that is what was stored in them; they follow the current session now, and `--session default` pins one back: GET:/api/json"
+  ]
+]

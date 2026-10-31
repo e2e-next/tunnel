@@ -1,0 +1,36 @@
+{
+  "seq": 3,
+  "time": "2026-10-11T09:30:00.007",
+  "kind": "http",
+  "request": {
+    "method": "GET",
+    "scheme": "http",
+    "host": "cdn.example.com",
+    "port": 80,
+    "path": "/img/a.png",
+    "query": {},
+    "url": "http://cdn.example.com/img/a.png",
+    "headers": {},
+    "body": null,
+    "body_encoding": null
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "image/png"
+    },
+    "body": "iVBORw0KGgoA/w==",
+    "body_encoding": "base64",
+    "elapsed_ms": 12,
+    "size": 10
+  },
+  "matched_by": null,
+  "mode": "passthrough",
+  "replay_seq": null,
+  "unmatched": false,
+  "client": "",
+  "truncated": false,
+  "encrypted": false,
+  "bytes_up": 0,
+  "bytes_down": 0
+}
