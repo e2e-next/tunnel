@@ -6,6 +6,12 @@ Charles; tunnel decrypts the hosts you name, shows every call as it happens,
 keeps what the real server said, and answers later calls from those recordings
 — or from literal JSON, or from a JavaScript handler you wrote a minute ago.
 
+tunnel is made for a coding agent to drive. Every command takes `--json`,
+`tunnel mcp` offers the same operations to an MCP client such as Claude Code or
+Codex as typed tools, and `tunnel agents` prints the guide an agent reads first.
+[Driving tunnel from a coding agent](#driving-tunnel-from-a-coding-agent) has
+the rest.
+
 📖 [中文文档](README.zh-CN.md)
 
 [![Node](https://img.shields.io/badge/node-22.18%2B-brightgreen.svg)](https://nodejs.org)

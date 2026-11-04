@@ -5,6 +5,11 @@
 实时显示每一次调用，把真实服务端的回答留下来，之后就用这些录制作答 ——
 也可以答字面量 JSON，或者一分钟前刚写好的 JavaScript handler。
 
+tunnel 是按 AI 编码助手来驱动设计的：每条命令都能加 `--json` 输出 JSON，
+`tunnel mcp` 把同样的操作做成带类型的工具，交给 Claude Code、Codex 这类 MCP
+客户端，`tunnel agents` 打印 agent 该先读的那份文档。详见
+[用 AI 编码助手来驱动](#用-ai-编码助手来驱动)。
+
 📖 [English](README.md)
 
 [![Node](https://img.shields.io/badge/node-22.18%2B-brightgreen.svg)](https://nodejs.org)
