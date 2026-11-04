@@ -12,7 +12,7 @@ Codex as typed tools, and `tunnel agents` prints the guide an agent reads first.
 [Driving tunnel from a coding agent](#driving-tunnel-from-a-coding-agent) has
 the rest.
 
-📖 [中文文档](README.zh-CN.md)
+📖 [中文文档](README_zh-CN.md)
 
 [![Node](https://img.shields.io/badge/node-22.18%2B-brightgreen.svg)](https://nodejs.org)
 [![npm](https://img.shields.io/npm/v/tunnel-use.svg)](https://www.npmjs.com/package/tunnel-use)

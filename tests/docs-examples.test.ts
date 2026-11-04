@@ -22,7 +22,7 @@ import { AGENTS_GUIDE, PACKAGE_ROOT } from '../src/package-info.ts'
 import { compileScript } from '../src/script.ts'
 import { tmpDir } from './support/tmp.ts'
 
-const READMES = [join(PACKAGE_ROOT, 'README.md'), join(PACKAGE_ROOT, 'README.zh-CN.md')]
+const READMES = [join(PACKAGE_ROOT, 'README.md'), join(PACKAGE_ROOT, 'README_zh-CN.md')]
 const DOCS = [AGENTS_GUIDE, ...READMES]
 
 /** What makes a block an example of the library rather than a script */

@@ -1,6 +1,6 @@
 {
   "name": "tunnel-use",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Local HTTP mock server and HTTPS device proxy, driven by a coding agent over MCP or from a CLI",
   "keywords": ["mcp", "agent", "mock", "proxy", "https", "record", "replay", "testing", "http", "api", "tunnel"],
   "homepage": "https://github.com/e2e-next/tunnel",

@@ -93,7 +93,7 @@ test('the shell page offers the CA certificate', async (t) => {
   assert.ok(html.includes(env.ca.fingerprint()))
 })
 
-for (const name of ['README.md', 'README.zh-CN.md']) {
+for (const name of ['README.md', 'README_zh-CN.md']) {
   // The offline promise is only kept if the next person knows how it works:
   // both READMEs name the committed bundle and the target that rebuilds it, and
   // neither mentions `make css` or Alpine, which the panel does not use: docs

@@ -247,7 +247,7 @@ function build(): string {
 
 /**
  * Whether the tarball holds exactly the files a release ships, given its paths as npm pack lists
- * them: the four npm adds by itself, the guide, the built panel, and every file the build emitted,
+ * them: the three npm adds by itself, the guide, the built panel, and every file the build emitted,
  * relative to the package root: a dist/<name>.js and a dist/<name>.d.ts for each module. Worked out
  * from the constants and from what tsc reported, never written out by hand. It prints a ❌ line,
  * which fails the run, for each path over and each one missing, or a ✅ line when there is neither.
@@ -257,7 +257,6 @@ function holdsExpectedFiles(packed: string[], emitted: string[]): boolean {
   const expected = [
     'package.json',
     'README.md',
-    'README.zh-CN.md',
     'LICENSE',
     relative(PACKAGE_ROOT, AGENTS_GUIDE),
     ...PANEL_FILES.map((name) => `${panel}/${name}`),
