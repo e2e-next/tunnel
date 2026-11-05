@@ -1,22 +1,69 @@
 # tunnel
 
-A local HTTP proxy and mock server for client tests. A phone, a simulator or
-anything else points its HTTP proxy at this machine, the way it would point at
-Charles; tunnel decrypts the hosts you name, shows every call as it happens,
-keeps what the real server said, and answers later calls from those recordings
-— or from literal JSON, or from a JavaScript handler you wrote a minute ago.
+An AI-first local HTTP proxy and mock server for client tests: a coding agent
+such as Claude Code or Codex drives it over MCP or the CLI, and test code embeds
+it to set each case's answers and check what the app called.
 
-tunnel is made for a coding agent to drive. Every command takes `--json`,
-`tunnel mcp` offers the same operations to an MCP client such as Claude Code or
-Codex as typed tools, and `tunnel agents` prints the guide an agent reads first.
-[Driving tunnel from a coding agent](#driving-tunnel-from-a-coding-agent) has
-the rest.
+A phone, a simulator or anything else points its HTTP proxy at this machine,
+the way it would point at Charles; tunnel decrypts the hosts you name, shows
+every call as it happens, keeps what the real server said, and answers later
+calls from those recordings — or from literal JSON, or from a JavaScript
+handler you wrote a minute ago.
 
 📖 [中文文档](README_zh-CN.md)
 
 [![Node](https://img.shields.io/badge/node-22.18%2B-brightgreen.svg)](https://nodejs.org)
 [![npm](https://img.shields.io/npm/v/tunnel-use.svg)](https://www.npmjs.com/package/tunnel-use)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENSE)
+
+## Why tunnel
+
+### AI-first: a coding agent drives it
+
+tunnel is built to be run by an agent, not only by a person at the panel.
+`tunnel mcp` gives an MCP client sixteen typed tools cut to what an agent
+actually does, every command takes `--json` and exits with a code an agent can
+branch on, and `tunnel agents` prints the guide an agent reads first — out of
+the installed package, so it describes the version in hand.
+
+```bash
+claude mcp add tunnel -- tunnel mcp        # Claude Code
+codex mcp add tunnel -- tunnel mcp         # Codex
+```
+
+From there a request in plain words is enough — "answer the feed with an empty
+list, then show me what the app called" — and the agent sets the rule, waits
+for the calls and reads them back.
+[Driving tunnel from a coding agent](#driving-tunnel-from-a-coding-agent) has
+the rest.
+
+### Embedded in your test code
+
+Each test case sets its own answers and checks what the app called, from inside
+the test. A Node or TypeScript suite starts tunnel in its own process, with
+nothing to start first and no port to agree on:
+
+```ts
+import assert from 'node:assert/strict'
+import { startTunnel } from 'tunnel-use'
+
+const tunnel = await startTunnel({ proxyHost: '127.0.0.1' })
+try {
+  await tunnel.setRule({ key: 'GET:api.example.test/v5/feed', mode: 'json', json_response: { cards: [] } })
+  // ... drive the app through tunnel.proxyUrl; here one request stands in for it
+  const answer = await tunnel.check('GET', 'http://api.example.test/v5/feed')
+  assert.equal(answer.status, 200)
+  const wait = await tunnel.waitForRequest({ key: 'GET:api.example.test/v5/feed', timeout: 5 })
+  assert.equal(wait.timed_out, false)
+} finally {
+  await tunnel.stop()
+}
+```
+
+A Swift or Kotlin test case running inside the app does the same over the admin
+API. [Using tunnel from TypeScript tests](#using-tunnel-from-typescript-tests)
+and [Calling tunnel from a test case](#calling-tunnel-from-a-test-case) have
+the rest.
 
 ## What it is
 

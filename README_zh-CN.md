@@ -1,20 +1,63 @@
 # tunnel
 
-给客户端测试用的本地 HTTP 代理与 mock server。手机、模拟器或任何别的客户端，
-像指向 Charles 一样把 HTTP 代理指到这台机器；tunnel 解密你点名的 host，
-实时显示每一次调用，把真实服务端的回答留下来，之后就用这些录制作答 ——
-也可以答字面量 JSON，或者一分钟前刚写好的 JavaScript handler。
+AI-first 的本地 HTTP 代理与 mock server，给客户端测试用：Claude Code、Codex
+这类 AI 编码助手通过 MCP 或命令行驱动它，测试代码把它嵌进来，每个用例自己设定
+返回、自己检查 app 调了什么。
 
-tunnel 是按 AI 编码助手来驱动设计的：每条命令都能加 `--json` 输出 JSON，
-`tunnel mcp` 把同样的操作做成带类型的工具，交给 Claude Code、Codex 这类 MCP
-客户端，`tunnel agents` 打印 agent 该先读的那份文档。详见
-[用 AI 编码助手来驱动](#用-ai-编码助手来驱动)。
+手机、模拟器或任何别的客户端，像指向 Charles 一样把 HTTP 代理指到这台机器；
+tunnel 解密你点名的 host，实时显示每一次调用，把真实服务端的回答留下来，
+之后就用这些录制作答 —— 也可以答字面量 JSON，或者一分钟前刚写好的
+JavaScript handler。
 
 📖 [English](README.md)
 
 [![Node](https://img.shields.io/badge/node-22.18%2B-brightgreen.svg)](https://nodejs.org)
 [![npm](https://img.shields.io/npm/v/tunnel-use.svg)](https://www.npmjs.com/package/tunnel-use)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENSE)
+
+## 特色
+
+### AI-first：让 AI 编码助手来驱动
+
+tunnel 生来就是给 agent 用的，不只是给坐在面板前的人。`tunnel mcp` 交给 MCP
+客户端十六个带类型的工具，按 agent 实际要做的事切分；每条命令都能加 `--json`
+输出 JSON，退出码也能拿来分支；`tunnel agents` 打印 agent 该先读的那份文档，
+出自已安装的包，说的就是手上这个版本。
+
+```bash
+claude mcp add tunnel -- tunnel mcp        # Claude Code
+codex mcp add tunnel -- tunnel mcp         # Codex
+```
+
+之后用一句大白话提要求就够了 ——「feed 返回空列表，然后告诉我 app 调了什么」——
+agent 会设好规则、等调用到来、再把它们读回来。详见
+[用 AI 编码助手来驱动](#用-ai-编码助手来驱动)。
+
+### 嵌进测试代码
+
+每个用例在测试里自己设定返回、自己检查 app 调了什么。跑在 Node 或 TypeScript
+里的测试套件直接在自己的进程里起 tunnel，不用先起服务，也不用约定端口：
+
+```ts
+import assert from 'node:assert/strict'
+import { startTunnel } from 'tunnel-use'
+
+const tunnel = await startTunnel({ proxyHost: '127.0.0.1' })
+try {
+  await tunnel.setRule({ key: 'GET:api.example.test/v5/feed', mode: 'json', json_response: { cards: [] } })
+  // …经 tunnel.proxyUrl 驱动 app；这里用一个请求代替
+  const answer = await tunnel.check('GET', 'http://api.example.test/v5/feed')
+  assert.equal(answer.status, 200)
+  const wait = await tunnel.waitForRequest({ key: 'GET:api.example.test/v5/feed', timeout: 5 })
+  assert.equal(wait.timed_out, false)
+} finally {
+  await tunnel.stop()
+}
+```
+
+跑在 app 里的 Swift、Kotlin 测试用例经管理 API 做同样的事。详见
+[在 TypeScript 测试里用 tunnel](#在-typescript-测试里用-tunnel) 和
+[在测试用例里调用 tunnel](#在测试用例里调用-tunnel)。
 
 ## 这是什么
 
