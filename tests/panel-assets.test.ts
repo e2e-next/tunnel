@@ -93,19 +93,19 @@ test('the shell page offers the CA certificate', async (t) => {
   assert.ok(html.includes(env.ca.fingerprint()))
 })
 
-for (const name of ['README.md', 'README_zh-CN.md']) {
+for (const name of ['docs/panel.md', 'docs/zh-CN/panel.md']) {
   // The offline promise is only kept if the next person knows how it works:
-  // both READMEs name the committed bundle and the target that rebuilds it, and
-  // neither mentions `make css` or Alpine, which the panel does not use: docs
+  // both panel pages name the committed bundle and the target that rebuilds it,
+  // and neither mentions `make css` or Alpine, which the panel does not use: docs
   // describing a build target that does not exist are worse than no docs at all
-  test(`the README documents what the panel loads: ${name}`, () => {
-    const readme = readFileSync(join(PACKAGE_ROOT, name), 'utf8')
+  test(`the docs say what the panel loads: ${name}`, () => {
+    const page = readFileSync(join(PACKAGE_ROOT, name), 'utf8')
 
-    assert.ok(readme.includes('panel.js'))
-    assert.ok(readme.includes('make panel'))
-    assert.ok(!readme.includes('make css'))
-    assert.ok(!readme.includes('Alpine'))
-    assert.ok(!readme.includes('alpine'))
+    assert.ok(page.includes('panel.js'))
+    assert.ok(page.includes('make panel'))
+    assert.ok(!page.includes('make css'))
+    assert.ok(!page.includes('Alpine'))
+    assert.ok(!page.includes('alpine'))
   })
 }
 

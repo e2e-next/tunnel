@@ -2,7 +2,7 @@
 // is set to. nodeUpstream asks for every request it forwards, the proxy port for every tunnel it does not
 // decrypt, and the banner, `tunnel status` and health print describe(). Sending everything to the proxy would
 // send the loopback and the LAN there too, and a request back to tunnel itself, in a loop, when the proxy is
-// tunnel, which is how the README has the iOS Simulator's Mac set up.
+// tunnel, which is how docs/devices.md has the iOS Simulator's Mac set up.
 //
 // The order is the environment variables, lower-case first; macOS's own settings (scutil --proxy) when
 // they name no proxy; then straight there. Two guards stand around it: a local target never goes through a

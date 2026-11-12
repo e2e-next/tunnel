@@ -2668,7 +2668,7 @@ test('a value is checked for its type only where it is used', async (t) => {
   assert.deepEqual(sent, [{ method: 'GET', path: '/__admin__/health', query: {} }])
 })
 
-// The first of the promises README and AGENTS.md make for tunnel mcp: what comes back is the JSON
+// The first of the promises docs/agents.md and AGENTS.md make for tunnel mcp: what comes back is the JSON
 // `--json` prints. Each tool that does what a command does is asked what that command is asked, of
 // the same admin app over the same log, rules and recordings, and its text is what the command
 // writes with --json, less the newline print ends it with

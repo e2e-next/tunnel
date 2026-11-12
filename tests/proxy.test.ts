@@ -1272,7 +1272,7 @@ test("start() tells the routes which port is the proxy's own, and close() takes 
 // those straight there without asking about a proxy
 test('a system proxy that points at the proxy port is taken for no proxy at all', async (t) => {
   let own = 0
-  // Both web proxies at 127.0.0.1 and the proxy port, as the README sets up the iOS simulator
+  // Both web proxies at 127.0.0.1 and the proxy port, as docs/devices.md sets up the iOS simulator
   const readSystemProxy = async () =>
     '<dictionary> {\n' +
     `  HTTPEnable : 1\n  HTTPPort : ${own}\n  HTTPProxy : 127.0.0.1\n` +

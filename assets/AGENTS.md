@@ -364,8 +364,10 @@ it cannot spawn a command on this machine: `POST /__admin__/mocks/apply`,
 `POST /__admin__/state/reset`, `GET /__admin__/requests/wait`, `GET
 /__admin__/requests?each=1`. The admin port is `127.0.0.1:8000` from an iOS
 simulator, `10.0.2.2:8000` from an Android emulator, and `127.0.0.1:8000` after
-`adb reverse tcp:8000 tcp:8000` on a device over USB. README.md has the full
-API table and a Swift and a Kotlin example.
+`adb reverse tcp:8000 tcp:8000` on a device over USB. The full API table is in
+[docs/admin-api.md](https://github.com/e2e-next/tunnel/blob/main/docs/admin-api.md),
+and a Swift and a Kotlin example in
+[docs/in-app-tests.md](https://github.com/e2e-next/tunnel/blob/main/docs/in-app-tests.md).
 
 ## From TypeScript test code
 
@@ -373,8 +375,9 @@ A test suite that runs in Node can start tunnel inside its own process with
 `startTunnel()` from `tunnel-use`: free ports, a temporary directory, and a
 handle whose methods are the admin API's. A rule set there can take a function
 as its handler, with a script's `ctx` and return values, that lives in the test
-process alone, unseen by the CLI, MCP and the panel. README.md has the rest,
-under "Using tunnel from TypeScript tests".
+process alone, unseen by the CLI, MCP and the panel.
+[docs/typescript-tests.md](https://github.com/e2e-next/tunnel/blob/main/docs/typescript-tests.md)
+has the rest.
 
 ## Watch out for
 
