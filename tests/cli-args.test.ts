@@ -93,7 +93,7 @@ test('the parser takes each probe the way probes.jsonl says', async (t) => {
 })
 
 test('--json does not turn a usage error into JSON', async (t) => {
-  // README: a misspelt flag is still the argument parser's own usage message
+  // docs/cli.md: a misspelt flag is still the argument parser's own usage message
   const io = captureIo()
   const argv = ['--json', 'set', 'GET', '/a', '--nonsense']
   const code = await main(argv, io, { env: { TUNNEL_CONFIG_DIR: tmpDir(t) } })

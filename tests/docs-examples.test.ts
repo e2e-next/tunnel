@@ -1,6 +1,7 @@
 // The handlers the docs teach have to work as written. The first two tests read the guide that
-// `tunnel agents` prints and both READMEs, and hand every handler example in them to compileScript,
-// so an example that stops compiling fails here before anyone copies it.
+// `tunnel agents` prints and the docs in both languages, each README with the pages under docs/, and
+// hand every handler example in them to compileScript, so an example that stops compiling fails here
+// before anyone copies it.
 //
 // An example is a fenced block marked js, javascript, ts or typescript with `handler` in it, and it
 // has to be a whole script, as a rule would hold it: `…` is not JavaScript, so whatever is left out
@@ -8,13 +9,13 @@
 // in inline code, which nothing here reads. A `def handler` is held to be nowhere at all, inline
 // code included.
 //
-// A block with `from 'tunnel-use'` in it is an example of the library instead, which the READMEs
-// teach in "Using tunnel from TypeScript tests", and it is run rather than compiled: the third test
+// A block with `from 'tunnel-use'` in it is an example of the library instead, which the READMEs and
+// docs/typescript-tests.md teach, and it is run rather than compiled: the third test
 // writes it to a module of its own, with that import pointed at src/index.ts, and imports it. The
 // example's own assertions are the check, and the example stops its own tunnel, so it has to reach
 // no network and listen on 127.0.0.1 alone, as everything else in the suite does.
 import assert from 'node:assert/strict'
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { test } from 'node:test'
 import { pathToFileURL } from 'node:url'
@@ -22,8 +23,27 @@ import { AGENTS_GUIDE, PACKAGE_ROOT } from '../src/package-info.ts'
 import { compileScript } from '../src/script.ts'
 import { tmpDir } from './support/tmp.ts'
 
-const READMES = [join(PACKAGE_ROOT, 'README.md'), join(PACKAGE_ROOT, 'README_zh-CN.md')]
-const DOCS = [AGENTS_GUIDE, ...READMES]
+/** One language's docs: its README and the pages in its directory */
+function docsOf(readme: string, dir: string): string[] {
+  const pages = readdirSync(join(PACKAGE_ROOT, dir))
+    .filter((name) => name.endsWith('.md'))
+    .sort()
+    .map((name) => join(PACKAGE_ROOT, dir, name))
+  return [join(PACKAGE_ROOT, readme), ...pages]
+}
+
+interface DocSet {
+  name: string
+  paths: string[]
+}
+
+/** Each set has to hold examples of its own, so a language whose examples all went missing fails */
+const LANGUAGES: DocSet[] = [
+  { name: 'the English docs', paths: docsOf('README.md', 'docs') },
+  { name: 'the Chinese docs', paths: docsOf('README_zh-CN.md', join('docs', 'zh-CN')) },
+]
+const DOC_SETS: DocSet[] = [{ name: 'the agents guide', paths: [AGENTS_GUIDE] }, ...LANGUAGES]
+const DOCS = DOC_SETS.flatMap((set) => set.paths)
 
 /** What makes a block an example of the library rather than a script */
 const LIBRARY_IMPORT = `from 'tunnel-use'`
@@ -65,21 +85,25 @@ function fencedBlocks(path: string): Block[] {
 const nameOf = (path: string): string => relative(PACKAGE_ROOT, path)
 
 test('every handler example in the docs compiles', () => {
-  for (const path of DOCS) {
-    const examples = fencedBlocks(path).filter(
-      (block) =>
-        SCRIPT_LANGUAGES.has(block.language) &&
-        block.source.includes('handler') &&
-        !block.source.includes(LIBRARY_IMPORT),
-    )
-    // Else a change in how the Markdown is written could leave this checking nothing at all
-    assert.ok(examples.length > 0, `${nameOf(path)} has no js or ts block with a handler in it`)
-    for (const { line, source } of examples) {
-      assert.doesNotThrow(
-        () => compileScript(source, 'GET:/docs-example'),
-        `${nameOf(path)}:${line}`,
+  for (const { name, paths } of DOC_SETS) {
+    let count = 0
+    for (const path of paths) {
+      const examples = fencedBlocks(path).filter(
+        (block) =>
+          SCRIPT_LANGUAGES.has(block.language) &&
+          block.source.includes('handler') &&
+          !block.source.includes(LIBRARY_IMPORT),
       )
+      count += examples.length
+      for (const { line, source } of examples) {
+        assert.doesNotThrow(
+          () => compileScript(source, 'GET:/docs-example'),
+          `${nameOf(path)}:${line}`,
+        )
+      }
     }
+    // Else a change in how the Markdown is written could leave this checking nothing at all
+    assert.ok(count > 0, `${name} have no js or ts block with a handler in them`)
   }
 })
 
@@ -95,20 +119,25 @@ test('no doc shows a Python handler', () => {
   }
 })
 
-test('every library example in the READMEs runs as written', async (t) => {
+test('every library example in the docs runs as written', async (t) => {
   // The import as the package resolves it, pointed at the sources instead
   const entry = JSON.stringify(pathToFileURL(join(PACKAGE_ROOT, 'src', 'index.ts')).href)
-  for (const path of READMES) {
-    const examples = fencedBlocks(path).filter((block) => block.source.includes(LIBRARY_IMPORT))
-    // Else a change in how the Markdown is written could leave this running nothing at all
-    assert.ok(examples.length > 0, `${nameOf(path)} has no block that imports tunnel-use`)
-    // A directory to each README: an example on the same line of the other one would otherwise be
-    // a module already imported, which import() hands back without running it again
-    const dir = tmpDir(t)
-    for (const { line, source } of examples) {
-      const file = join(dir, `example-${line}.mts`)
-      writeFileSync(file, source.replaceAll(`'tunnel-use'`, entry))
-      await assert.doesNotReject(import(pathToFileURL(file).href), `${nameOf(path)}:${line}`)
+  for (const { name, paths } of LANGUAGES) {
+    let count = 0
+    for (const path of paths) {
+      const examples = fencedBlocks(path).filter((block) => block.source.includes(LIBRARY_IMPORT))
+      if (examples.length === 0) continue
+      count += examples.length
+      // A directory to each doc: an example on the same line of another one would otherwise be a
+      // module already imported, which import() hands back without running it again
+      const dir = tmpDir(t)
+      for (const { line, source } of examples) {
+        const file = join(dir, `example-${line}.mts`)
+        writeFileSync(file, source.replaceAll(`'tunnel-use'`, entry))
+        await assert.doesNotReject(import(pathToFileURL(file).href), `${nameOf(path)}:${line}`)
+      }
     }
+    // Else a change in how the Markdown is written could leave this running nothing at all
+    assert.ok(count > 0, `${name} have no block that imports tunnel-use`)
   }
 })

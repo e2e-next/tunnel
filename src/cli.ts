@@ -85,7 +85,7 @@ export async function main(
   try {
     parsed = buildParser(given.deps, given.io).parse(argv)
   } catch (error) {
-    // The usage of the level that failed and the parser's sentence, never JSON (README: a misspelt
+    // The usage of the level that failed and the parser's sentence, never JSON (docs/cli.md: a misspelt
     // flag is still the argument parser's own usage message)
     if (!(error instanceof UsageError)) throw error
     given.io.stderr.write(error.text())
