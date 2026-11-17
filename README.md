@@ -10,8 +10,6 @@ coding agent over MCP or the CLI, or by code that embeds it.
 [![npm](https://img.shields.io/npm/v/tunnel-use.svg)](https://www.npmjs.com/package/tunnel-use)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENSE)
 
-![tunnel's panel: every call the app made, with its status, its timing and what answered it, and one call opened in full](https://raw.githubusercontent.com/e2e-next/tunnel/main/docs/images/panel-traffic.png)
-
 ## The problem
 
 Testing a client against its real backend is slow and fragile:
@@ -88,6 +86,11 @@ try {
 
 A Swift or Kotlin test case running inside the app does the same over the
 admin API.
+
+For people watching a run, the panel at <http://127.0.0.1:8000/> shows the calls
+as they arrive:
+
+![tunnel's panel: every call the app made, with its status, its timing and what answered it, and one call opened in full](https://raw.githubusercontent.com/e2e-next/tunnel/main/docs/images/panel-traffic.png)
 
 ## Install
 
