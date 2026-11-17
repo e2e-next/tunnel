@@ -1,0 +1,17 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.e2e-next/tunnel",
+  "title": "tunnel",
+  "description": "Local HTTPS proxy and mock server for app tests: record, replay, mock and break API calls",
+  "repository": { "url": "https://github.com/e2e-next/tunnel", "source": "github" },
+  "version": "3.1.1",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "tunnel-use",
+      "version": "3.1.1",
+      "transport": { "type": "stdio" },
+      "packageArguments": [{ "type": "positional", "value": "mcp" }]
+    }
+  ]
+}
