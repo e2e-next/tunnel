@@ -615,6 +615,57 @@ test('ctx.recorded() and ctx.recordings() resolve with Recorded in a function ha
   assert.notEqual(second.own, first.own)
 })
 
+// The request log is in memory, so ctx.requests() answers at once here, as it does in the worker:
+// copies of what the log holds, from the last reset on, a big integer in them a BigInt; a key that
+// does not read throws, as a script's call does
+test('ctx.requests() answers at once in a function handler, with copies, from the last reset on', async (t) => {
+  const e = env(t)
+  e.manager.updateRequestConfig('POST:/api/notes', { mode: 'json', json_response: { ok: true } })
+  e.functions.set(functionRule('GET:/api/notes'), (ctx) => {
+    const sent = ctx.requests({ key: 'POST:/api/notes' })
+    const bodies = sent.map((one) => (one as { request: { body: { id: unknown } } }).request.body)
+    const bigints = bodies.every((body) => typeof body.id === 'bigint')
+    for (const body of bodies) body.id = 'changed by the handler'
+    let bad: unknown
+    try {
+      ctx.requests({ key: 'bad key' })
+    } catch (error) {
+      bad = error
+    }
+    return {
+      array: Array.isArray(sent),
+      seqs: sent.map((one) => (one as { seq: number }).seq),
+      bigints,
+      bad: reasonOf(bad).startsWith("'bad key' is not a valid request key"),
+    }
+  })
+  const post = () =>
+    answer(e, {
+      method: 'POST',
+      host: 'x',
+      path: '/api/notes',
+      body: Buffer.from('{"id": 12345678901234567890}'),
+    })
+
+  await post()
+  assert.deepEqual(payload(await get(e, '/api/notes')), {
+    array: true,
+    seqs: [1],
+    bigints: true,
+    bad: true,
+  })
+  assert.equal(JSON.stringify(e.core.exchanges.get(1)?.request.body), '{"id":12345678901234567890}')
+
+  e.core.resetState()
+  await post()
+  assert.deepEqual(payload(await get(e, '/api/notes')), {
+    array: true,
+    seqs: [3],
+    bigints: true,
+    bad: true,
+  })
+})
+
 // The core chooses among the stored rules and the function rules together, the most
 // specific winning whatever its kind, and on a key both have, the function rule. Once that is
 // deleted, the stored rule answers again

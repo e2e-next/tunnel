@@ -53,8 +53,12 @@ requests, and the two recording readers
 `ctx.recordings({ key, session })`, which read the session they are given, or
 the rule's own when it names one, or the current session; both answer at once
 rather than with a promise, and only while their own request is being
-answered. Return an object or an array for JSON, a string for text, a `Buffer`
-for bytes, a `Recorded` for the recording itself, or
+answered. `ctx.requests({ key, since })` reads the request log the same way:
+what this server has answered since it started or since the last `tunnel
+reset`, oldest first.
+`ctx.state` belongs to one rule, so this is how one endpoint answers by what
+the client sent another. Return an object or an array for JSON, a string for
+text, a `Buffer` for bytes, a `Recorded` for the recording itself, or
 `ctx.reply(body, status, headers)` to set the status and the headers as well.
 A handler can be async, `require('node:…')` reaches Node's own modules, and an
 integer past 2^53 is a `BigInt` in the script and goes back out as the same

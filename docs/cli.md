@@ -10,7 +10,7 @@ be written before or after the subcommand.
 
 | Command | What it does |
 | --- | --- |
-| `tunnel serve [--admin-port 8000] [--proxy-port 8890] [--proxy-host 0.0.0.0] [--config-dir DIR] [--background]` | start both ports; `--port` is still accepted for the admin port |
+| `tunnel serve [--admin-port 8000] [--proxy-port 8890] [--proxy-host 0.0.0.0] [--config-dir DIR] [--data-dir DIR] [--background]` | start both ports; `--port` is still accepted for the admin port, and `--data-dir` keeps the recordings apart from the rest |
 | `tunnel status` / `tunnel stop` | follow the server `serve --background` started — pid, both ports, the directories and the current session — and end it |
 | `tunnel init` | create `.tunnel/` here, so this project keeps its own config, state and recordings |
 | `tunnel agents` | print the guide for coding agents, out of the installed package rather than the default branch |

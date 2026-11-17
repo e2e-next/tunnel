@@ -7,10 +7,10 @@
 // handler(ctx) is, and what it returns is answered by the same rules, script-context.ts's and
 // scriptResponse()'s, within the same limit and with the same 500s. What differs is only what the
 // thread decides. ctx.recorded() and ctx.recordings() hand back promises, where the worker waits
-// for the disk blocked. Calls run as they come, where scripts queue: nothing crosses a thread, so a
-// rule's calls share its ctx.state, one live object, and none loses what another wrote. And a
-// handler that loops synchronously cannot be stopped: it holds the very thread its timer would go
-// off on.
+// for the disk blocked; ctx.requests() answers at once in both, the log being in memory. Calls run
+// as they come, where scripts queue: nothing crosses a thread, so a rule's calls share its
+// ctx.state, one live object, and none loses what another wrote. And a handler that loops
+// synchronously cannot be stopped: it holds the very thread its timer would go off on.
 import { getLogger } from './log.ts'
 import { textResponse, type Request, type Response } from './messages.ts'
 import type { TunnelRequestConfig } from './models.ts'
@@ -21,16 +21,18 @@ import {
   parseScriptJson,
   Recorded,
   type Reply,
+  requestsLookup,
   stackOf,
   toReturn,
   type RecordedOptions,
+  type RequestsOptions,
 } from './script-context.ts'
-import { SCRIPT_TIMEOUT_MS, scriptRequest, scriptResponse } from './script.ts'
+import { SCRIPT_TIMEOUT_MS, scriptRequest, scriptResponse, type RequestsLookup } from './script.ts'
 
 const log = getLogger('script-function')
 
 /** What a function handler is handed: a script's ctx (script-worker.ts), field for field and in its
- *  order, but that recorded() and recordings() return promises */
+ *  order, but that recorded() and recordings() return promises. requests() does not, here or there */
 export interface FunctionContext {
   method: string
   path: string
@@ -46,6 +48,7 @@ export interface FunctionContext {
   client: string
   recorded(options?: RecordedOptions): Promise<Recorded | null>
   recordings(options?: Omit<RecordedOptions, 'query'>): Promise<Recorded[]>
+  requests(options?: RequestsOptions): object[]
   reply(body: unknown, status?: unknown, headers?: unknown): Reply
 }
 
@@ -141,7 +144,12 @@ export class FunctionRunner {
    *  Never rejects: whatever goes wrong is a Response, in ScriptRunner's words — 500 text
    *  "The script failed:\n<stack>", 500 text "The script timed out after <seconds> seconds",
    *  500 text "The script runner was closed" */
-  run(request: Request, rule: TunnelRequestConfig, currentSession: string): Promise<Response> {
+  run(
+    request: Request,
+    rule: TunnelRequestConfig,
+    currentSession: string,
+    requests: RequestsLookup,
+  ): Promise<Response> {
     // Made before the call, as a script's bucket is, so that a reset names a rule that ran
     // whatever its handler did
     const key = rule.request_key
@@ -151,8 +159,8 @@ export class FunctionRunner {
       this.#state.set(key, bucket)
     }
     const reader = new RecordingReader(this.#store, request, rule, currentSession)
-    // The ctx a script is handed, made by the same function, but for these two, which read on this
-    // thread and hand back promises
+    // The ctx a script is handed, made by the same function, but for these three, which read on
+    // this thread
     const ctx: FunctionContext = handlerContext(scriptRequest(request), bucket.state, {
       // Arrow functions, as the worker's are. Each Recorded is made afresh from JSON, as the
       // worker makes it, so that what one call changes in it no other sees, and a big integer in
@@ -174,6 +182,12 @@ export class FunctionRunner {
         })
         const each = parseScriptJson(JSON.stringify(found)) as object[]
         return each.map((fields) => new Recorded(fields))
+      },
+      // At once, as in the worker. Copies made from JSON, as a script's are: the log's own
+      // objects are the panel's and the API's too, and a big integer in them becomes a BigInt
+      requests: (options) => {
+        const { key, since } = requestsLookup(options)
+        return parseScriptJson(JSON.stringify(requests(key, since))) as object[]
       },
     })
     const answered = Promise.withResolvers<Response>()

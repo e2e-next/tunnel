@@ -13,9 +13,12 @@
 // device never waits for a disk, and a read waits until the queue is empty, so it sees
 // every write queued before it. The index over the files is walked once per session
 // and then kept, because replay asks it which recording answers this call on every
-// single request; every write and every delete goes through this store, so the walk
-// is redone exactly when the directory changed. The tree `tunnel recordings export`
-// writes is the tree `tunnel recordings import` reads back.
+// single request. It is walked again when the session changed: this store drops it on
+// every write and delete of its own, and another tunnel sharing the data directory
+// (--data-dir) rewrites the session's stamp file, which every read compares first.
+// The tree `tunnel recordings export` writes is the tree `tunnel recordings import`
+// reads back.
+import { randomUUID } from 'node:crypto'
 import { readFileSync, readdirSync, rmSync, statSync, type Dirent } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
@@ -42,6 +45,14 @@ const log = getLogger('recordings')
 export const RECORDINGS_DIR = 'recordings'
 /** A request for "/" has no path segments to be filed under */
 export const ROOT_SEGMENT = '_root'
+/**
+ * The file in a session's directory that every write into the session rewrites, with a value of
+ * its own each time, once the recording is on disk. Read before the session is walked, so a
+ * tunnel that walked it sees any file written afterwards as a stamp that changed. A session that
+ * was deleted has no directory left, which reads as a change as well. Not a `.json`, so no walk
+ * takes it for a recording, and not a directory, so no listing takes it for a host
+ */
+const STAMP = '.changed'
 
 // ---------------------------------------------------------------- the layout
 
@@ -308,10 +319,18 @@ function jsonFiles(dir: string, found: string[] = []): string[] {
   return found
 }
 
-/** One file the queue is to write */
+/** One file the queue is to write, and its session's stamp, rewritten once it is written */
 interface WriteOp {
   path: string
   text: string
+  stamp: string
+}
+
+/** One session's index: its recordings, and the stamp read before they were walked (null when the
+ *  session had no directory, '' when it had no stamp) */
+interface Indexed {
+  stamp: string | null
+  calls: RecordedCall[]
 }
 
 /** What GET /record, health's `recording` and the panel's header report, keys in this order */
@@ -333,10 +352,11 @@ export class RecordingStore {
   /** <data_dir>/recordings */
   readonly root: string
   readonly #manager: TunnelConfigManager
-  // One session's recordings, walked once and kept until this store changes them. Replay asks for
-  // a sample per request, and reading every file again each time would put the whole directory on
-  // the event loop. A Map, not an object: __proto__ is a session name like any other
-  readonly #index = new Map<string, RecordedCall[]>()
+  // One session's recordings, walked once and kept until this store changes them, or its stamp
+  // says another tunnel did. Replay asks for a sample per request, and reading every file again
+  // each time would put the whole directory on the event loop. A Map, not an object: __proto__ is
+  // a session name like any other
+  readonly #index = new Map<string, Indexed>()
   /** The writes queued and not started yet, in the order they were queued */
   readonly #ops: WriteOp[] = []
   /** The round of writing under way, if there is one: it takes from #ops until they run out */
@@ -645,6 +665,7 @@ export class RecordingStore {
     return {
       path: join(this.root, filePath(session, method, host, path, exchange.seq)),
       text: formatRecording(exchange),
+      stamp: join(this.root, safeSegment(session), STAMP),
     }
   }
 
@@ -659,8 +680,9 @@ export class RecordingStore {
 
   /**
    * Writes what is queued, in order, until nothing is: each file opened afresh, through a symlink
-   * if it is one, and written over if it is there. A write that fails is a warning, and the next
-   * one is tried all the same; the promise this returns never rejects.
+   * if it is one, and written over if it is there, and then its session's stamp. A write that
+   * fails is a warning, and the next one is tried all the same; the promise this returns never
+   * rejects.
    *
    * Nothing may stop it: every read waits for it to be done, so a queue that died of one
    * recording would leave the admin port waiting over all the rest.
@@ -671,6 +693,7 @@ export class RecordingStore {
         try {
           await mkdir(dirname(op.path), { recursive: true })
           await writeFile(op.path, op.text)
+          await writeFile(op.stamp, randomUUID())
         } catch (error) {
           log.warning(`Could not write the recording ${op.path}: ${reasonOf(error)}`)
         }
@@ -717,17 +740,30 @@ export class RecordingStore {
    *
    * The walk happens once per session: whoever calls this does so inside #whenIdle, so nothing is
    * still being written, and every write and delete here drops what it changed, so what comes
-   * back is what is on disk.
+   * back is what is on disk. What another tunnel on the same data directory changed shows as a
+   * stamp other than the one read before the walk; read first, so that a file written during the
+   * walk is followed by a stamp the next call has not seen.
    */
   #entries(session: string | null): RecordedCall[] {
     if (session === null) return this.#sessionNames().flatMap((name) => this.#entries(name))
     const name = safeSegment(session)
+    const stamp = this.#stamp(name)
     let cached = this.#index.get(name)
-    if (cached === undefined) {
-      cached = this.#scan(name)
+    if (cached === undefined || cached.stamp !== stamp) {
+      cached = { stamp, calls: this.#scan(name) }
       this.#index.set(name, cached)
     }
-    return cached
+    return cached.calls
+  }
+
+  /** The session's stamp: '' when its directory has none (written before stamps were, or by
+   *  hand), null when it has no directory */
+  #stamp(name: string): string | null {
+    try {
+      return readFileSync(join(this.root, name, STAMP), 'utf8')
+    } catch {
+      return isDirectory(join(this.root, name)) ? '' : null
+    }
   }
 
   /** Read one session's files into index rows, oldest call first; calls under the same seq stay

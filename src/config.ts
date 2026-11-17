@@ -31,6 +31,8 @@ export const PROJECT_DIR_NAME = '.tunnel'
 export interface PathContext {
   /** tunnel serve --config-dir: first of all when non-empty */
   configDir?: string
+  /** tunnel serve --data-dir: the data directory, wherever the other two went, when non-empty */
+  dataDir?: string
   env: Readonly<Record<string, string | undefined>> // process.env
   cwd: string // process.cwd()
   platform: NodeJS.Platform // process.platform
@@ -73,9 +75,19 @@ export class Paths {
     directory: string,
     context: Partial<Pick<PathContext, 'cwd' | 'home'>> = {},
   ): Paths {
-    const absolute = resolve(context.cwd ?? process.cwd(), expandUser(directory, context))
-    const resolved = realpathOfExisting(absolute)
+    const resolved = absoluteDirectory(directory, context)
     return new Paths({ config_dir: resolved, state_dir: resolved, data_dir: resolved })
+  }
+
+  /**
+   * These paths with the data directory somewhere else: --data-dir, made absolute as
+   * inOneDirectory makes its directory.
+   *
+   * It is what lets tunnels with config and state of their own replay one set of recordings: one
+   * per device, each with its own rules and request log.
+   */
+  withDataDir(directory: string, context: Partial<Pick<PathContext, 'cwd' | 'home'>> = {}): Paths {
+    return new Paths({ ...this.describe(), data_dir: absoluteDirectory(directory, context) })
   }
 
   get configFile(): string {
@@ -130,6 +142,14 @@ function expandUser(path: string, context: Partial<Pick<PathContext, 'home'>>): 
     return (context.home ?? homedir()) + path.slice(1)
   }
   return path
+}
+
+/** A directory a person named: `~` expanded, relative to the cwd, symlinks resolved */
+function absoluteDirectory(
+  directory: string,
+  context: Partial<Pick<PathContext, 'cwd' | 'home'>>,
+): string {
+  return realpathOfExisting(resolve(context.cwd ?? process.cwd(), expandUser(directory, context)))
 }
 
 /**
@@ -238,9 +258,16 @@ function userPaths(
  * Explicitly given is context.configDir (`tunnel serve --config-dir`), then
  * TUNNEL_CONFIG_DIR; all four levels are in this one function. An empty
  * configDir or variable counts as not given, all the way down to the user
- * level.
+ * level. context.dataDir (`tunnel serve --data-dir`) then moves the data
+ * directory alone, whichever level the rest came from.
  */
 export function resolvePaths(context: Partial<PathContext> = {}): Paths {
+  const paths = configuredPaths(context)
+  return context.dataDir ? paths.withDataDir(context.dataDir, context) : paths
+}
+
+/** resolvePaths without the data directory moved */
+function configuredPaths(context: Partial<PathContext>): Paths {
   if (context.configDir) return Paths.inOneDirectory(context.configDir, context)
 
   const env = context.env ?? process.env

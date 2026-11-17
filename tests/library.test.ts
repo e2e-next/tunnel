@@ -230,6 +230,31 @@ test('caDir is refused with a configDir, and without ca.pem or ca-key.pem, leavi
   assert.deepEqual(readdirSync(tmp), [])
 })
 
+// dataDir is --data-dir: the recordings go there, with either configDir, and stay when stop()
+// removes a temporary one. Two tunnels given the same one replay what either imported
+test('dataDir keeps the recordings in a directory two tunnels share, and stop() leaves it', async (t) => {
+  const shared = tmpDir(t)
+  const one = await start(t, { dataDir: shared })
+  const two = await start(t, { dataDir: shared })
+  assert.equal((await two.status()).data_dir, shared)
+  await one.setRule({
+    key: 'GET:api.example.test/v1/feed',
+    mode: 'json',
+    json_response: { from: 'the rule' },
+  })
+  await one.check('GET', 'http://api.example.test/v1/feed')
+  await one.importRecordings([await one.getRequest(1)])
+
+  const replayed = await two.check('GET', 'http://api.example.test/v1/feed')
+
+  assert.equal(replayed.status, 200)
+  assert.equal(replayed.body.toString('utf8'), '{"from": "the rule"}')
+  await one.stop()
+  await two.stop()
+  assert.equal(existsSync(one.configDir), false)
+  assert.ok(existsSync(join(shared, 'recordings', 'default', 'api.example.test')))
+})
+
 // configDir is read as --config-dir is, where an empty one is none (resolvePaths): then a temporary
 // directory, which stop() removes, and nothing written where the process runs, a CA's private key
 // least of all. null, which only a caller without types can pass, is none as well, and for caDir
@@ -265,7 +290,8 @@ test('startTunnel refuses an option it does not know with TunnelError 400', asyn
     starting,
     tunnelError(
       400,
-      "unknown option 'proxyport'; the options are configDir, caDir, proxyHost, proxyPort, adminPort",
+      "unknown option 'proxyport'; the options are configDir, caDir, dataDir, proxyHost, proxyPort, " +
+        'adminPort',
     ),
   )
 })
@@ -443,6 +469,7 @@ const SCRIPT_CTX = [
   'client',
   'recorded',
   'recordings',
+  'requests',
   'reply',
 ]
 
@@ -613,7 +640,7 @@ test('a function handler is handed the ctx a script is', async (t) => {
   assert.equal(handed.length, 1)
   const ctx = handed[0]!
   assert.deepEqual(Object.keys(ctx), SCRIPT_CTX)
-  const { body: bytes, headers, recorded, recordings, reply, ...values } = ctx
+  const { body: bytes, headers, recorded, recordings, requests, reply, ...values } = ctx
   assert.deepEqual(values, {
     method: 'POST',
     path: '/v1/echo',
@@ -633,7 +660,9 @@ test('a function handler is handed the ctx a script is', async (t) => {
     'content-length': String(body.length),
     'content-type': 'application/json',
   })
-  for (const method of [recorded, recordings, reply]) assert.equal(typeof method, 'function')
+  for (const method of [recorded, recordings, requests, reply]) {
+    assert.equal(typeof method, 'function')
+  }
 })
 
 // What a handler is handed of the request is its own copy, as a script's is, so what it changes in

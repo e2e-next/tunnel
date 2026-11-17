@@ -133,7 +133,7 @@ tunnel check GET https://api.example.com/v5/feed       # send one request throug
 | [The panel](docs/panel.md) | the web panel at `127.0.0.1:8000` |
 | [Rules](docs/rules.md) | rule keys; the json, script, passthrough and replay modes; sessions; faults and delays; scenario files |
 | [The request log](docs/requests.md) | what the app called, and waiting for a call |
-| [Record once, replay in CI](docs/record-replay.md) | recordings, sessions in CI, running in the background |
+| [Record once, replay in CI](docs/record-replay.md) | recordings, sessions in CI, running in the background, several devices at once |
 | [Calling tunnel from a test case](docs/in-app-tests.md) | Swift and Kotlin test cases over the admin API |
 | [Using tunnel from TypeScript tests](docs/typescript-tests.md) | the `tunnel-use` library: `startTunnel()` and function rules |
 | [Driving tunnel from a coding agent](docs/agents.md) | `tunnel agents` and the MCP server |

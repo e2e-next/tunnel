@@ -130,6 +130,7 @@ export function cmdServe(args: Args, io: CliIo, deps: CliDeps, entry: string): P
 async function serveForeground(args: Args, io: CliIo, deps: CliDeps): Promise<number> {
   const paths = resolvePaths({
     configDir: (args.config_dir as string | null) ?? undefined,
+    dataDir: (args.data_dir as string | null) ?? undefined,
     env: deps.env,
     cwd: deps.cwd,
   })
@@ -209,7 +210,13 @@ async function serveBackground(
   entry: string,
 ): Promise<number> {
   const configDir = args.config_dir as string | null
-  const paths = resolvePaths({ configDir: configDir ?? undefined, env: deps.env, cwd: deps.cwd })
+  const dataDir = args.data_dir as string | null
+  const paths = resolvePaths({
+    configDir: configDir ?? undefined,
+    dataDir: dataDir ?? undefined,
+    env: deps.env,
+    cwd: deps.cwd,
+  })
   paths.create()
 
   const base = `http://127.0.0.1:${args.admin_port}`
@@ -238,6 +245,7 @@ async function serveBackground(
     args.proxy_host as string,
   ]
   if (configDir) command.push('--config-dir', configDir)
+  if (dataDir) command.push('--data-dir', dataDir)
 
   const log = openSync(paths.logFile, 'a')
   let offset: number

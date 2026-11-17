@@ -8,10 +8,11 @@
 // BigInt.prototype.toJSON says so. That patch is the one change this module makes to its realm,
 // where scripts run and nothing of tunnel's would be surprised by it.
 //
-// The recordings stay on the main thread, which reads them from disk. ctx.recorded() and
-// ctx.recordings() ask it on a port of their own and wait for the answer, blocked, so that a
-// script calls them without await. A recording comes as JSON text too and becomes a Recorded
-// here, which is how a handler that returns one is told from one that returns any other object.
+// The recordings stay on the main thread, which reads them from disk, and so does the request log.
+// ctx.recorded(), ctx.recordings() and ctx.requests() ask it on a port of their own and wait for
+// the answer, blocked, so that a script calls them without await. A recording comes as JSON text
+// too and becomes a Recorded here, which is how a handler that returns one is told from one that
+// returns any other object; an exchange of the log stays the plain object its JSON makes.
 import { createRequire } from 'node:module'
 import {
   isMainThread,
@@ -27,9 +28,11 @@ import {
   parseScriptJson,
   RAW_JSON,
   Recorded,
+  requestsLookup,
   stackOf,
   toReturn,
   type RecordedOptions,
+  type RequestsOptions,
 } from './script-context.ts'
 import type {
   LookupMessage,
@@ -87,13 +90,14 @@ let running: number | null = null
 
 /** What a lookup for any run but the one in progress throws in the script */
 const NOT_RUNNING =
-  'ctx.recorded() and ctx.recordings() work only while their own request is being answered'
+  'ctx.recorded(), ctx.recordings() and ctx.requests() work only while their own request is ' +
+  'being answered'
 
-/** Ask the main thread, which holds the recordings, and wait for its answer: the JSON it sent,
- *  read, or the message of what the lookup threw, thrown here, in the script. The main thread
- *  answers on the port first and raises the flag after, and this looks at the port before it
- *  waits, so an answer quicker than the wait is not waited for. A wait that is never answered is
- *  the run's timer's to end, as any other run that never returns is */
+/** Ask the main thread, which holds the recordings and the request log, and wait for its answer:
+ *  the JSON it sent, read, or the message of what the lookup threw, thrown here, in the script.
+ *  The main thread answers on the port first and raises the flag after, and this looks at the
+ *  port before it waits, so an answer quicker than the wait is not waited for. A wait that is
+ *  never answered is the run's timer's to end, as any other run that never returns is */
 function lookup(message: LookupMessage): unknown {
   // A ctx used after its request was answered: by a timer or a promise its handler left behind,
   // or kept on globalThis by a run before this one. The main thread reads with the reader of the
@@ -122,7 +126,8 @@ async function onRun(message: RunMessage): Promise<void> {
   const { id, key, source, request } = message
   running = id
   // What a script's handler(ctx) is handed, the ctx a function handler is handed too, but for
-  // ctx.recorded() and ctx.recordings(), which wait here for the main thread's answer
+  // ctx.recorded(), ctx.recordings() and ctx.requests(), which wait here for the main thread's
+  // answer
   const ctx = handlerContext(request, parseScriptJson(message.stateJson), {
     // Arrow functions, which a script may take off ctx (const { recorded } = ctx) and still call.
     //
@@ -151,6 +156,13 @@ async function onRun(message: RunMessage): Promise<void> {
         session: options.session ?? null,
       })
       return (found as object[]).map((fields) => new Recorded(fields))
+    },
+    // The requests this tunnel has answered since its last reset, or after `since`, oldest first,
+    // each the exchange `tunnel requests show` prints; `key` keeps those a rule with that key
+    // would answer. What a script needs to answer one endpoint by what was sent to another
+    requests: (options?: RequestsOptions): object[] => {
+      const { key, since } = requestsLookup(options)
+      return lookup({ id, op: 'requests', key, since }) as object[]
     },
   })
   let outcome: ResultMessage['outcome']

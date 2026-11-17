@@ -22,7 +22,7 @@ Working with tunnel (the local mock proxy)? Run `tunnel agents` first — it pri
 the command reference and the handler(ctx) API for the installed version.
 ```
 
-A line rather than a copy of the guide: 23 KB pasted into a project's
+A line rather than a copy of the guide: 25 KB pasted into a project's
 instructions sits in every prompt whether it is wanted or not, and freezes at
 the version it was pasted from. The line costs nothing and always resolves to
 what is installed.

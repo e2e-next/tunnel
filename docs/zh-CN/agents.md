@@ -20,7 +20,7 @@ Working with tunnel (the local mock proxy)? Run `tunnel agents` first — it pri
 the command reference and the handler(ctx) API for the installed version.
 ```
 
-是**一行指针，不是把文档拷进去**：那份文档 23 KB，贴进工程的指令文件等于每次会话
+是**一行指针，不是把文档拷进去**：那份文档 25 KB，贴进工程的指令文件等于每次会话
 都无条件背着它，而且从此冻结在你粘贴的那个版本上。一行指针不花成本，且永远解析到
 当前安装的版本。
 
