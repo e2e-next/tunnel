@@ -100,7 +100,38 @@ npm install -g tunnel-use   # the package; the command is `tunnel`
 
 Node 22.18 or newer.
 
-## Quick start
+## Try it in a minute
+
+No phone needed: here `curl` stands in for the app. Its HTTPS proxy points at
+tunnel and it trusts tunnel's CA, which is all a device does.
+
+![Recording a real HTTPS answer, replaying it offline, refusing a call that was never recorded, changing one field of the recording with a script, breaking the endpoint with a 503 and a delay, and reading back every call](https://raw.githubusercontent.com/e2e-next/tunnel/main/docs/images/demo.gif)
+
+```bash
+mkdir try-tunnel && cd try-tunnel
+tunnel init                    # keep the config, the CA and the recordings in .tunnel/ here
+tunnel serve --background
+export https_proxy=http://127.0.0.1:8890 CURL_CA_BUNDLE=.tunnel/ca.pem
+
+tunnel ssl add jsonplaceholder.typicode.com          # decrypt this host
+tunnel record start
+curl https://jsonplaceholder.typicode.com/todos/1    # the real answer, recorded on its way through
+tunnel record stop
+
+tunnel mode replay
+curl https://jsonplaceholder.typicode.com/todos/1    # the same answer, from the recording
+curl https://jsonplaceholder.typicode.com/todos/2    # refused: never recorded, so never sent on
+
+tunnel set GET jsonplaceholder.typicode.com/todos/1 --status 503 --delay 2 -d '{"error": "maintenance"}'
+curl https://jsonplaceholder.typicode.com/todos/1    # a 503, two seconds later
+tunnel requests --each                               # every call, and what answered it
+
+tunnel stop && unset https_proxy CURL_CA_BUNDLE
+```
+
+`npx tunnel-use <command>` runs any of these without installing.
+
+## On a phone or simulator
 
 ```bash
 tunnel serve
@@ -128,6 +159,32 @@ tunnel ssl add api.example.com                         # decrypt this host's HTT
 tunnel set GET api.example.com/v5/feed -d '{"cards": []}'   # answer it with this
 tunnel check GET https://api.example.com/v5/feed       # send one request through the proxy
 ```
+
+## How it compares
+
+Recording and replay are not new, and tunnel is not the only proxy an agent can
+drive. What it puts together, under MIT, is what a client test suite needs: the
+device keeps calling its real hosts through a proxy, recordings are files you
+commit, replay refuses whatever was never recorded, a JavaScript function can
+edit a recorded answer, and it is driven as a CLI with `--json`, over HTTP,
+in-process from Node or as an MCP server.
+
+- **Charles, Proxyman, Reqable, HTTP Toolkit** are the GUIs to reach for when a
+  person is watching the traffic, and Proxyman (with a paid licence) and Reqable
+  have MCP servers too. tunnel is for when a test suite or an agent has to change
+  the answers and check the calls, run after run.
+- **mitmproxy** records (`-w`) and replays (`--server-replay`), and anything else
+  is a Python addon away. tunnel ships the test workflow itself: per-endpoint
+  rules in JSON, scripts in JavaScript, waiting for a call, and a request log to
+  assert on.
+- **WireMock, MockServer, Hoverfly** proxy, record and replay as well, and
+  MockServer has an MCP endpoint. They are built mainly for testing a service
+  against its dependencies; tunnel is built around a phone or a simulator: it
+  decrypts only the hosts you name, has commands that put its CA on a simulator
+  or an emulator, and installs with npm.
+- **MSW, nock, Polly.js** intercept inside one JavaScript process, so a native
+  app's traffic never reaches them. tunnel sits on the network, and a Node suite
+  can still start it in-process with `startTunnel()`.
 
 ## Documentation
 

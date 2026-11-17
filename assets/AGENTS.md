@@ -436,6 +436,11 @@ has the rest.
   `<certificates src="user"/>` in the test build's `network_security_config`),
   and the host on the SSL Proxying list. Certificate pinning must be off in the
   build under test.
+- **`--status` is a json rule's status.** It is the status the JSON answer, and
+  the `garbage` fault, goes back with; on a passthrough, replay or script rule
+  it changes nothing, though `tunnel ls` shows it. For a recorded answer with
+  another status, use a script: `const rec = ctx.recorded(); rec.status = 503;
+  return rec`.
 - **Recorded traffic is real data.** Recordings and request logs hold real
   hostnames, tokens and user data. `.tunnel/` ignores itself, exports hide the
   usual headers unless `--raw`, and anything committed is worth reading first.

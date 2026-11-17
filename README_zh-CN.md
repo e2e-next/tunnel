@@ -87,7 +87,38 @@ npm install -g tunnel-use   # 包名；命令叫 `tunnel`
 
 需要 Node 22.18 或更新版本。
 
-## 快速开始
+## 一分钟试用
+
+不用手机：这里由 `curl` 充当 app。它的 HTTPS 代理指向 tunnel、信任 tunnel 的 CA，
+设备要做的也就是这两件事。
+
+![录下一个真实的 HTTPS 返回，离线回放，拒绝没录过的调用，用脚本改掉录制里的一个字段，再用 503 加延迟把端点弄坏，最后读回每一次调用](https://raw.githubusercontent.com/e2e-next/tunnel/main/docs/images/demo.gif)
+
+```bash
+mkdir try-tunnel && cd try-tunnel
+tunnel init                    # 配置、CA 和录制都放在这里的 .tunnel/ 里
+tunnel serve --background
+export https_proxy=http://127.0.0.1:8890 CURL_CA_BUNDLE=.tunnel/ca.pem
+
+tunnel ssl add jsonplaceholder.typicode.com          # 解密这个 host
+tunnel record start
+curl https://jsonplaceholder.typicode.com/todos/1    # 真实返回，经过时录下来
+tunnel record stop
+
+tunnel mode replay
+curl https://jsonplaceholder.typicode.com/todos/1    # 同样的返回，来自录制
+curl https://jsonplaceholder.typicode.com/todos/2    # 拒绝：没录过，也就不会发出去
+
+tunnel set GET jsonplaceholder.typicode.com/todos/1 --status 503 --delay 2 -d '{"error": "maintenance"}'
+curl https://jsonplaceholder.typicode.com/todos/1    # 两秒后返回 503
+tunnel requests --each                               # 每一次调用，以及由谁作答
+
+tunnel stop && unset https_proxy CURL_CA_BUNDLE
+```
+
+不想安装的话，`npx tunnel-use <命令>` 可以直接跑上面任何一条。
+
+## 接上手机或模拟器
 
 ```bash
 tunnel serve
@@ -114,6 +145,25 @@ tunnel ssl add api.example.com                         # 解密这个 host 的 H
 tunnel set GET api.example.com/v5/feed -d '{"cards": []}'   # 用这个作答
 tunnel check GET https://api.example.com/v5/feed       # 经代理口真打一发
 ```
+
+## 和其他工具比
+
+录制回放不是新东西，能让 agent 驱动的代理也不止 tunnel 一个。它以 MIT 协议把客户端
+测试需要的几样东西放到了一起：设备照旧请求真实的 host，只是代理指向它；录制是可以提交
+的文件；回放时没录过的一律拒绝；可以用 JavaScript 函数改录制的返回；可以用带 `--json`
+的命令行、HTTP 接口、进程内的 Node 调用或 MCP 来驱动它。
+
+- **Charles、Proxyman、Reqable、HTTP Toolkit**：有人盯着流量看的时候，用它们的 GUI
+  最顺手；Proxyman（要付费授权）和 Reqable 也有 MCP server。tunnel 面向的是测试套件和
+  agent：一轮又一轮地改返回、查调用。
+- **mitmproxy**：能录（`-w`）能放（`--server-replay`），别的写个 Python addon 也都能做。
+  tunnel 直接带着测试要的那一套：按接口的 JSON 规则、JavaScript 脚本、等待某个调用、
+  可以拿来断言的请求日志。
+- **WireMock、MockServer、Hoverfly**：同样能做代理、录制和回放，MockServer 还有 MCP
+  接口。它们主要用来测一个服务和它的依赖；tunnel 围绕手机和模拟器来做：只解密你点名的
+  host，有现成命令把 CA 放进模拟器，`npm` 一装就能用。
+- **MSW、nock、Polly.js**：在一个 JavaScript 进程里拦截，原生 app 的流量到不了它们
+  那里。tunnel 在网络这一层，Node 测试照样可以用 `startTunnel()` 在进程里起它。
 
 ## 文档
 
