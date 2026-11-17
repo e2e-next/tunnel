@@ -62,6 +62,10 @@ export interface StartOptions {
    *  a simulator or device that trusts that CA keeps decrypting. Default, as when it is empty: a
    *  new CA */
   caDir?: string
+  /** recordings/ in this directory instead of configDir, as `tunnel serve --data-dir` puts it (~
+   *  expanded, relative to process.cwd()); kept, with either configDir. Tunnels given the same one
+   *  replay the same recordings. Default, as when it is empty: in configDir with the rest */
+  dataDir?: string
   proxyHost?: string // default '0.0.0.0', as tunnel serve; the admin port is always on 127.0.0.1
   proxyPort?: number // default 0: a free port
   adminPort?: number // default 0: a free port
@@ -71,6 +75,7 @@ export interface StartOptions {
 const START_OPTIONS: readonly (keyof StartOptions)[] = [
   'configDir',
   'caDir',
+  'dataDir',
   'proxyHost',
   'proxyPort',
   'adminPort',
@@ -213,6 +218,10 @@ export interface HandlerContext {
     session?: string | null
   }): Promise<Recorded | null>
   recordings(options?: { key?: string | null; session?: string | null }): Promise<Recorded[]>
+  /** The requests this tunnel has answered since it started or since resetState() with no key,
+   *  or since the seq `since`, oldest first; with `key`, only those a rule with that key would
+   *  answer. Copies, at once, as in a script */
+  requests(options?: { key?: string | null; since?: number | null }): Exchange[]
   /** Throws TypeError for a status outside 100–999 or headers that are not a plain object of
    *  strings, as a script's does */
   reply(body: unknown, status?: number | null, headers?: Record<string, string> | null): Reply
@@ -399,8 +408,9 @@ export async function startTunnel(options?: StartOptions): Promise<Tunnel> {
   let core: TunnelCore | null = null
   let proxy: ProxyServer | null = null
   try {
-    // Resolved as --config-dir is: under a symlinked tmpdir, the real path
-    const paths = Paths.inOneDirectory(directory)
+    // Resolved as --config-dir and --data-dir are: under a symlinked tmpdir, the real path
+    const inOne = Paths.inOneDirectory(directory)
+    const paths = options?.dataDir ? inOne.withDataDir(options.dataDir) : inOne
     if (source !== null) {
       copyFileSync(source.caFile, paths.caFile)
       copyFileSync(source.caKeyFile, paths.caKeyFile)

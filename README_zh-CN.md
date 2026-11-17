@@ -120,7 +120,7 @@ tunnel check GET https://api.example.com/v5/feed       # 经代理口真打一�
 | [面板](docs/zh-CN/panel.md) | `127.0.0.1:8000` 上的网页面板 |
 | [规则](docs/zh-CN/rules.md) | 规则 key；json、script、passthrough、replay 四种模式；session；故障与延迟；场景文件 |
 | [请求日志](docs/zh-CN/requests.md) | app 调了什么，以及等待某个调用 |
-| [录一次，在 CI 里回放](docs/zh-CN/record-replay.md) | 录制、CI 里的 session、后台运行 |
+| [录一次，在 CI 里回放](docs/zh-CN/record-replay.md) | 录制、CI 里的 session、后台运行、几台设备同时测 |
 | [在测试用例里调用 tunnel](docs/zh-CN/in-app-tests.md) | Swift、Kotlin 测试用例经管理 API 调用 |
 | [在 TypeScript 测试里用 tunnel](docs/zh-CN/typescript-tests.md) | `tunnel-use` 库：`startTunnel()` 和函数规则 |
 | [用 AI 编码助手来驱动](docs/zh-CN/agents.md) | `tunnel agents` 和 MCP server |

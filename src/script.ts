@@ -16,7 +16,7 @@
 // resetState answers at once.
 import { MessageChannel, Worker, type MessagePort } from 'node:worker_threads'
 import { reasonOf, UserError } from './errors.ts'
-import { DROPPED_RESPONSE_HEADERS } from './exchanges.ts'
+import { DROPPED_RESPONSE_HEADERS, type Exchange } from './exchanges.ts'
 import { parseJson } from './json.ts'
 import { getLogger } from './log.ts'
 import {
@@ -91,19 +91,27 @@ export interface RunMessage {
   stateJson: string // the rule's ctx.state bucket, '{}' the first time
 }
 
-/** ctx.recorded() / ctx.recordings(), on the lookup port */
-export interface LookupMessage {
-  id: number // the job it belongs to; a stale id is ignored
-  op: 'one' | 'all'
-  query: Record<string, string> | null // one only: null is "the request's own"
-  key: string | null
-  session: string | null
-}
+/** ctx.recorded() / ctx.recordings() / ctx.requests(), on the lookup port. id is the job it
+ *  belongs to; a stale id is ignored */
+export type LookupMessage =
+  | {
+      id: number
+      op: 'one' | 'all'
+      query: Record<string, string> | null // one only: null is "the request's own"
+      key: string | null
+      session: string | null
+    }
+  | { id: number; op: 'requests'; key: string | null; since: number | null }
 
-/** The main thread's answer on the lookup port: the Recorded (or null), or the list of them, as
- *  JSON text; or the message of the error the lookup threw, which the worker throws in the
- *  script */
+/** The main thread's answer on the lookup port: the Recorded (or null), the list of them or the
+ *  list of exchanges, as JSON text; or the message of the error the lookup threw, which the worker
+ *  throws in the script */
 export type LookupReply = { ok: true; json: string } | { ok: false; message: string }
+
+/** What ctx.requests() reads, which the core hands every run: the exchanges the request log holds
+ *  that a rule with `key` would answer, after `since`, or after the core's last reset when since
+ *  is null; the log's own objects, oldest first. A key that does not read throws UserError */
+export type RequestsLookup = (key: string | null, since: number | null) => Exchange[]
 
 /** What the handler returned, in the kinds the main thread answers differently */
 export type ScriptBody =
@@ -165,6 +173,7 @@ interface Job {
   rule: TunnelRequestConfig
   request: ScriptRequest
   reader: RecordingReader // what the script's ctx.recorded() and ctx.recordings() read
+  requests: RequestsLookup // what its ctx.requests() reads
   resolve: (response: Response) => void
   timer: NodeJS.Timeout | undefined // from when the run is posted to the worker
 }
@@ -202,7 +211,12 @@ export class ScriptRunner {
    *  Response — 500 {"detail": "<key> is in script mode but has no script"}, 500 text
    *  "The script failed:\n<stack>", 500 text "The script timed out after <seconds> seconds",
    *  500 text "The script runner crashed: <why>" */
-  run(request: Request, rule: TunnelRequestConfig, currentSession: string): Promise<Response> {
+  run(
+    request: Request,
+    rule: TunnelRequestConfig,
+    currentSession: string,
+    requests: RequestsLookup,
+  ): Promise<Response> {
     if (rule.script.trim() === '') {
       return Promise.resolve(
         errorResponse(500, `${rule.request_key} is in script mode but has no script`),
@@ -218,7 +232,16 @@ export class ScriptRunner {
     const shown = scriptRequest(request)
     return new Promise((resolve) => {
       const id = this.#nextId++
-      this.#queue.push({ id, key, rule, request: shown, reader, resolve, timer: undefined })
+      this.#queue.push({
+        id,
+        key,
+        rule,
+        request: shown,
+        reader,
+        requests,
+        resolve,
+        timer: undefined,
+      })
       void this.#pump()
     })
   }
@@ -336,23 +359,29 @@ export class ScriptRunner {
     return live
   }
 
-  /** ctx.recorded() or ctx.recordings() in the running script of `live`, which waits on its flag
-   *  for the answer: what the job's reader finds, as JSON text (a big integer's RawJson as its
-   *  digits, null as null), or the message of what the reader threw, which the worker throws in
-   *  the script. Answered on the asking worker's own port, so the reply goes nowhere else */
+  /** ctx.recorded(), ctx.recordings() or ctx.requests() in the running script of `live`, which
+   *  waits on its flag for the answer: what the job's reader, or its requests, finds, as JSON text
+   *  (a big integer's RawJson as its digits, null as null), or the message of what the lookup
+   *  threw, which the worker throws in the script. Answered on the asking worker's own port, so the
+   *  reply goes nowhere else */
   async #onLookup(live: Live, message: LookupMessage): Promise<void> {
     const job = this.#current
     // From a run that is over, which the worker does not ask for (its lookup() throws in the
     // script instead): should one come all the same, what it asked is nobody's to answer
     if (job === null || message.id !== job.id) return
-    const { key, session } = message
     let reply: LookupReply
     try {
-      // No query is the request's own, which the reader leaves to its caller
-      const found =
-        message.op === 'one'
-          ? await job.reader.one({ query: message.query ?? job.request.query, key, session })
-          : await job.reader.all({ key, session })
+      let found: unknown
+      if (message.op === 'requests') {
+        found = job.requests(message.key, message.since)
+      } else {
+        const { key, session } = message
+        // No query is the request's own, which the reader leaves to its caller
+        found =
+          message.op === 'one'
+            ? await job.reader.one({ query: message.query ?? job.request.query, key, session })
+            : await job.reader.all({ key, session })
+      }
       reply = { ok: true, json: JSON.stringify(found) }
     } catch (error) {
       // A key that does not read, say: the reader's UserError

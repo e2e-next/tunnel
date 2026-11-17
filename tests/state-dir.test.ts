@@ -147,6 +147,30 @@ test('explicit paths win over env', (t) => {
   assert.ok(!existsSync(join(tmp, 'ignored')))
 })
 
+// --data-dir moves the recordings alone, whichever level the rest came from, so that tunnels with
+// rules and request logs of their own replay the same ones
+test('a data directory given moves the data alone', (t) => {
+  const { tmp, home, context } = isolatedHome(t)
+  const where = { ...context, cwd: tmp, dataDir: 'shared' }
+
+  assert.deepEqual(resolvePaths(where).describe(), {
+    config_dir: join(home, '.config/tunnel'),
+    state_dir: join(home, '.local/state/tunnel'),
+    data_dir: join(tmp, 'shared'),
+  })
+  assert.deepEqual(resolvePaths({ ...where, configDir: 'one' }).describe(), {
+    config_dir: join(tmp, 'one'),
+    state_dir: join(tmp, 'one'),
+    data_dir: join(tmp, 'shared'),
+  })
+  assert.equal(
+    resolvePaths({ ...where, dataDir: '~/recordings' }).data_dir,
+    join(home, 'recordings'),
+  )
+  // An empty one is none, as an empty --config-dir is
+  assert.equal(resolvePaths({ ...where, dataDir: '' }).data_dir, join(home, '.local/share/tunnel'))
+})
+
 // `tunnel ls` runs elsewhere than the server, so a bare name means nothing there
 test('a relative directory is reported as an absolute one', (t) => {
   const { tmp, context } = isolatedHome(t)

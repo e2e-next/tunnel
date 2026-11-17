@@ -141,17 +141,43 @@ export interface RecordedOptions {
   session?: string | null
 }
 
+/** What ctx.requests() takes, as one options object. undefined and null are "not given" */
+export interface RequestsOptions {
+  key?: string | null // only the requests a rule with this key would answer
+  since?: number | null // only those after this seq; not given is the last reset's
+}
+
+/** ctx.requests()'s options as the lookup takes them, checked where the script called it: options
+ *  that are not an object, which would otherwise be read as none and give back every request, and
+ *  a since that is not an integer, which the seqs would be compared with only by coercion. Both
+ *  throw a TypeError */
+export function requestsLookup(options: unknown): { key: string | null; since: number | null } {
+  if (options == null) return { key: null, since: null }
+  if (!isPlainObject(options)) {
+    throw new TypeError('ctx.requests: options must be an object, as in ctx.requests({ key })')
+  }
+  const { key, since } = options as RequestsOptions
+  if (since != null && !Number.isSafeInteger(since)) {
+    // A string quoted, so that '5' is told from 5
+    const shown = typeof since === 'string' ? repr(since) : String(since)
+    throw new TypeError(`ctx.requests: since must be an integer, not ${shown}`)
+  }
+  return { key: key ?? null, since: since ?? null }
+}
+
 /** The ctx handler(ctx) is handed, the one ctx of both places a handler runs. `request` is what
  *  scriptRequest() (script.ts) makes of the request, copies a handler may change without changing
- *  what the log keeps; `state` is the rule's ctx.state; and ctx.recorded() and ctx.recordings() are
- *  each thread's own, since each reads the recordings its own way: the worker asks the main thread
- *  and waits for the answer blocked, and the main thread hands back promises */
+ *  what the log keeps; `state` is the rule's ctx.state; and ctx.recorded(), ctx.recordings() and
+ *  ctx.requests() are each thread's own, since each reads its own way: the worker asks the main
+ *  thread and waits for the answer blocked, and the main thread hands back promises for the
+ *  recordings, which it reads from disk, and the requests at once, which it holds in memory */
 export function handlerContext<One, All>(
   request: ScriptRequest,
   state: unknown,
   lookups: {
     recorded: (options?: RecordedOptions) => One
     recordings: (options?: Omit<RecordedOptions, 'query'>) => All
+    requests: (options?: RequestsOptions) => object[]
   },
 ) {
   return {
@@ -172,7 +198,8 @@ export function handlerContext<One, All>(
     client: request.client,
     recorded: lookups.recorded,
     recordings: lookups.recordings,
-    // An arrow function, as the two above are: a script may take any of them off ctx
+    requests: lookups.requests,
+    // An arrow function, as the three above are: a script may take any of them off ctx
     // (const { reply } = ctx) and still call it
     reply: (body: unknown, status?: unknown, headers?: unknown) => new Reply(body, status, headers),
   }

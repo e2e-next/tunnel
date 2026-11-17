@@ -34,7 +34,7 @@ import { formatG } from './number-format.ts'
 import { chooseSample, RecordingStore } from './recordings.ts'
 import { selectRule } from './rule-keys.ts'
 import { FunctionRunner } from './script-function.ts'
-import { ScriptRunner } from './script.ts'
+import { ScriptRunner, type RequestsLookup } from './script.ts'
 import { UpstreamRoutes } from './upstream-route.ts'
 import { decodeContent, nodeUpstream, UpstreamError, type UpstreamClient } from './upstream.ts'
 
@@ -185,10 +185,18 @@ export class TunnelCore {
   #countedSession: string | null = null
   /** The replay before this one, done or not: each waits for it before it starts (#replay) */
   #replayTurn: Promise<unknown> = Promise.resolve()
+  /** The last seq the log had handed out when this core started or was last reset whole: where
+   *  ctx.requests() starts unless a script says otherwise, so that it reads one test case's
+   *  requests, and none of the last run's that the log read back */
+  #resetSeq: number
+  /** ctx.requests(), for every script and function rule this core runs */
+  readonly #requests: RequestsLookup = (key, since) =>
+    this.exchanges.select({ key, since: since ?? this.#resetSeq })
 
   constructor(configManager: TunnelConfigManager, options?: TunnelCoreOptions) {
     this.configManager = configManager
     this.exchanges = options?.exchanges ?? new ExchangeLog(configManager)
+    this.#resetSeq = this.exchanges.lastSeq
     this.recordings = options?.recordings ?? new RecordingStore(configManager)
     // The store just settled on, given or made: a script reads the recordings replay reads
     this.scripts = options?.scripts ?? new ScriptRunner(this.recordings)
@@ -209,12 +217,14 @@ export class TunnelCore {
   }
 
   /** Clear what a test case leaves behind, ctx.state, a script's and a function rule's, and the
-   *  replay counters. No key clears every bucket and returns the keys that had something, sorted;
-   *  a key clears that one and returns [key] when any side had it */
+   *  replay counters. No key clears every bucket and returns the keys that had something, sorted,
+   *  and ctx.requests() starts over from here; a key clears that one and returns [key] when any
+   *  side had it */
   resetState(requestKey?: string | null): string[] {
     const scriptKeys = this.scripts.resetState(requestKey)
     const functionKeys = this.functions.resetState(requestKey)
     if (requestKey === undefined || requestKey === null) {
+      this.#resetSeq = this.exchanges.lastSeq
       // By UTF-16 code unit, not by code point: the two differ only past U+FFFF
       const keys = [...scriptKeys, ...functionKeys, ...this.#replayCounts.keys()]
       const cleared = [...new Set(keys)].sort()
@@ -347,7 +357,8 @@ export class TunnelCore {
         const session = this.configManager.getConfig().session
         // A function rule's handler runs on this thread, a stored rule's script in the worker
         const runner = this.functions.owns(rule) ? this.functions : this.scripts
-        return { response: await runner.run(request, rule, session), fromUpstream: false }
+        const response = await runner.run(request, rule, session, this.#requests)
+        return { response, fromUpstream: false }
       }
       case 'passthrough':
         // The one answer that is the upstream's own, once it has come back

@@ -95,6 +95,8 @@ camelCase。
   调用超时之后再往里放的东西照样留下。
 - `ctx.recorded()` 和 `ctx.recordings()` 返回 Promise。两种 handler 都写成
   async、用 `await ctx.recorded()` 就对了：`await` 对不是 Promise 的值也成立。
+  `ctx.requests()` 不返回 Promise：请求日志在内存里，它在这里和在脚本里一样当场
+  作答。
 - 同步的死循环停不下来：它占着计时器要用的那个线程。可能死循环的 handler 应该
   写成脚本，脚本的 worker 到 10 秒会被停掉。
 - 场景里只放存盘的规则。`applyScenario()` 拒绝带 `handler` 的场景：不拦的话
@@ -124,6 +126,10 @@ CLI 和管理 API 看不到函数规则：`GET /__admin__/mocks` 只列存盘的
 `config.json`，包括函数规则替换掉同 key 的存盘规则。给一个只给这次测试用的目录 ——
 两个 tunnel 用同一个目录会互相覆盖文件。它不写 `tunnel.pid`，所以 `tunnel stop`
 不会去停测试进程。
+
+`dataDir` 同 `--data-dir`，把录制单独放进一个目录，不管 `configDir` 是哪个；
+`stop()` 删临时目录时它留着。给同一个 `dataDir` 的几个 tunnel 回放同一份录制，
+比如每个 Playwright worker 带一台设备、一个 tunnel，导入一次，大家都能回放。
 
 它起的东西都不会让进程留着不退。忘了 `stop()` 的测试文件照样结束，临时目录在进程
 退出时删掉；进程被信号杀掉时，留下的目录由系统的临时文件清理收走。正在答的请求、

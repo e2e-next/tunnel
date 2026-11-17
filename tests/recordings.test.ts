@@ -1074,7 +1074,8 @@ test('an import checks every entry before it writes any, and is on disk once it 
   const session = join(store.root, 's')
   assert.equal(await store.importExchanges([JSON.parse(formatRecording(exchange(1)))], 's'), 1)
   const before = treeFiles(session)
-  assert.deepEqual(before, ['api.example.com/GET/x/000001.json'])
+  // The stamp beside the recordings is what another tunnel on this data directory reads
+  assert.deepEqual(before, ['.changed', 'api.example.com/GET/x/000001.json'])
   const good: Record<string, unknown> = JSON.parse(formatRecording(exchange(2)))
 
   await assert.rejects(
@@ -1097,6 +1098,7 @@ test('an import checks every entry before it writes any, and is on disk once it 
   // Not flushed: the files are there once it resolves
   assert.equal(await store.importExchanges([good, { ...good, seq: '5' }], 's', true), 2)
   assert.deepEqual(treeFiles(session), [
+    '.changed',
     'api.example.com/GET/x/000002.json',
     'api.example.com/GET/x/000005.json',
   ])
@@ -1104,7 +1106,10 @@ test('an import checks every entry before it writes any, and is on disk once it 
   assert.equal(field(parseJson(five), 'seq'), 5)
 
   assert.equal(await store.importExchanges([good]), 1)
-  assert.deepEqual(treeFiles(join(store.root, 'default')), ['api.example.com/GET/x/000002.json'])
+  assert.deepEqual(treeFiles(join(store.root, 'default')), [
+    '.changed',
+    'api.example.com/GET/x/000002.json',
+  ])
   await assert.rejects(store.importExchanges([good], '../etc'), UserError)
 })
 
@@ -1631,7 +1636,7 @@ test('an import files a seq of 2.0 as 2, and one of true as 1', async (t) => {
 
   assert.equal(await store.importExchanges([float, flag], 's'), 2)
   const session = join(store.root, 's')
-  const files = treeFiles(session)
+  const files = treeFiles(session).filter((name) => name.endsWith('.json'))
   assert.deepEqual(files, [
     'api.example.com/GET/x/000001.json',
     'api.example.com/GET/x/000002.json',
@@ -1654,9 +1659,56 @@ test('deleting a session that is a symlink removes the link, keeps what it point
   assert.equal(await store.delete('linked'), 2)
   assert.equal(lstatSync(link, { throwIfNoEntry: false }), undefined)
   assert.deepEqual(treeFiles(join(store.root, 'real')), [
+    '.changed',
     'api.example.com/GET/x/000001.json',
     'api.example.com/GET/x/000002.json',
   ])
+})
+
+// Tunnels started with one --data-dir and config and state of their own: each walks a session
+// once, and sees what another recorded, imported or deleted there afterwards, by the stamp the
+// other rewrote or by the directory being gone
+test('two stores on one data directory each see what the other changed', async (t) => {
+  const stores: RecordingStore[] = []
+  t.after(() => Promise.all(stores.map((store) => store.close())))
+  const shared = tmpDir(t)
+  for (let made = 0; made < 2; made += 1) {
+    const paths = Paths.inOneDirectory(tmpDir(t)).withDataDir(shared)
+    stores.push(new RecordingStore(new TunnelConfigManager(paths)))
+  }
+  const [one, two] = stores as [RecordingStore, RecordingStore]
+  const seqs = async (store: RecordingStore) =>
+    (await store.index({ session: 's' })).map((row) => row.seq)
+
+  assert.equal(one.root, two.root)
+  assert.deepEqual(await seqs(two), [])
+  one.write(exchange(1), 's')
+  await one.flush()
+  assert.deepEqual(await seqs(two), [1])
+  one.write(exchange(2), 's')
+  await one.flush()
+  assert.deepEqual(await seqs(two), [1, 2])
+  // Replay reads through the same index
+  assert.equal((await two.samples('s', 'GET', 'api.example.com', '/x')).length, 2)
+
+  await one.importExchanges([JSON.parse(formatRecording(exchange(5)))], 's', true)
+  assert.deepEqual(await seqs(two), [5])
+  assert.equal(await one.delete('s'), 1)
+  assert.deepEqual(await seqs(two), [])
+})
+
+// A session written before stamps were, or by hand, has none; its directory going is seen all the
+// same
+test('a session with no stamp is seen to go when its directory does', async (t) => {
+  const { store } = makeStore(t)
+  const endpoint = join(store.root, 's', 'api.example.com', 'GET', 'x')
+  mkdirSync(endpoint, { recursive: true })
+  writeFileSync(join(endpoint, '000001.json'), formatRecording(exchange(1)))
+  assert.equal(await store.count('s'), 1)
+
+  rmSync(join(store.root, 's'), { recursive: true })
+
+  assert.equal(await store.count('s'), 0)
 })
 
 // The reading half of a file where a directory should be; "a write that fails is logged" is the

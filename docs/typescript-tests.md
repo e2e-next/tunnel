@@ -103,7 +103,8 @@ What sets it apart from a script comes from running in the test's own process:
   once, until `resetState()`. What a call puts there after it timed out stays.
 - `ctx.recorded()` and `ctx.recordings()` return promises. `await
   ctx.recorded()` in an async handler is right for both kinds, since `await`
-  takes a value that is not a promise as well.
+  takes a value that is not a promise as well. `ctx.requests()` does not: the
+  request log is in memory, so it answers at once here, as in a script.
 - A synchronous endless loop cannot be stopped: it holds the very thread the
   timer would fire on. A handler that might loop belongs in a script, whose
   worker is stopped after ten seconds.
@@ -141,6 +142,11 @@ it writes land in its `config.json` as the CLI's would, a function rule taking
 out the stored rule with its key included. Give it a directory that is the
 test's alone — two tunnels on one directory overwrite each other's files. No
 `tunnel.pid` is written, so `tunnel stop` never goes after the test process.
+
+`dataDir` puts the recordings in a directory of their own, as `--data-dir`
+does, with either `configDir`, and `stop()` leaves it when it removes the
+temporary one. Tunnels given the same `dataDir` replay the same recordings: one
+tunnel per Playwright worker and device, say, and one import for all of them.
 
 Nothing it starts keeps the process alive. A test file that never calls
 `stop()` still ends, and its temporary directory goes when the process exits;

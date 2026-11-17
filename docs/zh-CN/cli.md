@@ -9,7 +9,7 @@
 
 | 命令 | 做什么 |
 | --- | --- |
-| `tunnel serve [--admin-port 8000] [--proxy-port 8890] [--proxy-host 0.0.0.0] [--config-dir DIR] [--background]` | 启动两个端口；`--port` 仍然当作管理口接受 |
+| `tunnel serve [--admin-port 8000] [--proxy-port 8890] [--proxy-host 0.0.0.0] [--config-dir DIR] [--data-dir DIR] [--background]` | 启动两个端口；`--port` 仍然当作管理口接受，`--data-dir` 把录制和其余文件分开放 |
 | `tunnel status` / `tunnel stop` | 跟踪 `serve --background` 起的那个服务 —— pid、两个端口、三类目录和当前 session —— 以及结束它 |
 | `tunnel init` | 在当前目录建 `.tunnel/`，让这个项目有自己的 config、state 和录制 |
 | `tunnel agents` | 打印给 coding agent 看的那份指南，出自装好的包而不是默认分支 |

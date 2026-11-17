@@ -48,9 +48,12 @@ tunnel set GET /v5/feed --script feed.js
 对象，以及两个读录制的方法 `ctx.recorded({ query, key, session })` 和
 `ctx.recordings({ key, session })` —— 它们读的是传进去的那个 session，没传就读本
 规则钉死的那个，再没有就读当前 session；两个都当场作答、不返回 promise，而且只在
-它们自己的请求正在答复时能用。返回对象或数组就是 JSON，字符串是文本，`Buffer` 是
-字节，返回 `Recorded` 就是那条录制本身，要连状态码和 headers 一起定就返回
-`ctx.reply(body, status, headers)`。handler 可以是 async 的，`require('node:…')`
+它们自己的请求正在答复时能用。`ctx.requests({ key, since })` 用同样的方式读请求
+日志：这个服务自启动或上次 `tunnel reset` 以来答过的请求，从旧到新。`ctx.state`
+只属于一条规则，一个接口要按客户端发给另一个接口的内容作答，就靠它。返回对象或
+数组就是 JSON，字符串是文本，`Buffer` 是字节，返回 `Recorded` 就是那条录制本身，
+要连状态码和 headers 一起定就返回 `ctx.reply(body, status, headers)`。handler
+可以是 async 的，`require('node:…')`
 能用到 Node 自带的模块，超过 2^53 的整数在脚本里是 `BigInt`，写回去还是原来那个数。
 整个脚本每个请求都会重新执行一遍，所以顶层变量会被重置，要活下来的东西请放进
 `ctx.state`；脚本在 worker 线程里跑，超时十秒，过了时限还卡着的脚本会被停掉，抛

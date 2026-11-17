@@ -641,7 +641,7 @@ export function adminRouter(deps: AdminDeps, options?: AdminOptions): Hono {
     },
     '/__admin__/state/reset': {
       /** Clear what one test case leaves for the next: script `ctx.state` and the counters a
-       *  `sequence` replay walks. No key clears every rule's. */
+       *  `sequence` replay walks. No key clears every rule's, and starts `ctx.requests()` over. */
       POST: async (c) => {
         const body = await readBody(c, STATE_RESET, { required: false })
         if (!body.ok) return body.response

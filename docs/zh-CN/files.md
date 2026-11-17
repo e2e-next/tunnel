@@ -27,6 +27,12 @@ macOS 上用 `~/.config` 而不是 `~/Library/Application Support` 是有意的�
 在 macOS 上也和在 Linux 上一样住在 `~/.config`。把 config 和 state 分开，
 才能清掉 state 目录而不丢掉设备已经信任的那份 CA。
 
+`tunnel serve` 的 `--data-dir DIR`（库里是 `dataDir`）只把 data 挪走，另外两类
+放哪儿不变：几个服务各有自己的 `--config-dir`、共用一个 `--data-dir`，回放的就是
+同一份录制。每个 session 目录里有一个 `.changed` 文件，每次写入都会重写它。服务读
+过一个 session 就留着不再读，靠这个文件才知道别的服务在那里录了、导入了或删了
+什么。
+
 服务启动时会把三类目录都记进日志，`tunnel ls` 的第一行会打印它们，
 `GET /__admin__/health` 也会报。
 

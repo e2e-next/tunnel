@@ -15,7 +15,7 @@ Working with tunnel (the local mock proxy)? Run `tunnel agents` first — it pri
 the command reference and the handler(ctx) API for the installed version.
 ```
 
-A line rather than a copy. The guide is 23 KB, so pasting it in puts it in every
+A line rather than a copy. The guide is 25 KB, so pasting it in puts it in every
 prompt whether it is needed or not, and freezes it at the version it was pasted
 from.
 

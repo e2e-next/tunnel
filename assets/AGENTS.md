@@ -33,6 +33,12 @@ directory: everything it would have printed is in the log, and a command with
 no `--base` and no `TUNNEL_BASE` reads the admin port out of the pid file, so a
 server on another port needs no `--base` at all.
 
+Several devices tested at once get a server each, since rules, script state and
+the request log are a server's own: ports and a `--config-dir` of their own,
+the same `ca.pem` and `ca-key.pem` copied into every config directory, and one
+`--data-dir` so that they all replay the same recordings. Address each one with
+`--base` or `TUNNEL_BASE`.
+
 `tunnel serve` prints the LAN address to set as the device's proxy and the CA
 fingerprint; `GET /__admin__/health` reports the same under `proxy`, along with
 the version and the three directories. The panel at <http://127.0.0.1:8000/>
@@ -183,12 +189,13 @@ function handler(ctx) { /* … */ }
 | `ctx.state` | object | survives between requests, one bucket per rule; holds what JSON can represent (`BigInt` too); `tunnel reset` empties it |
 | `ctx.recorded({ query?, key?, session? })` | `Recorded \| null` | synchronous: the recording the `match` strategy picks. `query` is this request's unless given, `key` names another endpoint, `session` another batch; a malformed `key` throws an Error |
 | `ctx.recordings({ key?, session? })` | `Recorded[]` | synchronous: every recording of this endpoint, oldest first |
+| `ctx.requests({ key?, since? })` | `object[]` | synchronous: what this server has answered since it started or since the last `tunnel reset`, oldest first, each as the request log keeps it; `key` keeps the requests a rule with that key would answer, `since` (a seq) starts somewhere else |
 | `ctx.reply(body, status?, headers?)` | `Reply` | sets the status and the headers; `body` is any of the return values below |
 
-`ctx.recorded()` and `ctx.recordings()` work only while their own request is
-being answered. Called once `handler` has returned, from a timer it left behind,
-or from a later request, they throw an Error with this message:
-`ctx.recorded() and ctx.recordings() work only while their own request is being answered`.
+`ctx.recorded()`, `ctx.recordings()` and `ctx.requests()` work only while their
+own request is being answered. Called once `handler` has returned, from a timer
+it left behind, or from a later request, they throw an Error with this message:
+`ctx.recorded(), ctx.recordings() and ctx.requests() work only while their own request is being answered`.
 
 `ctx.recorded()` picks its sample exactly as `--strategy match` does: the
 newest recording whose query is the one being asked, falling back to the newest
@@ -210,6 +217,29 @@ function handler(ctx) {
   if (rec === null) return ctx.reply({ cards: [] }, 404)
   rec.body.cards = []                     // ... with one field changed
   return rec                              // status, headers and body go back together
+}
+```
+
+`ctx.state` belongs to one rule. To answer one endpoint by what the client sent
+another, read the request log: `ctx.requests()` hands back what this server has
+answered since the last `tunnel reset`, which is where a test case starts, so a
+list can leave out what an earlier call removed. Each entry is the exchange
+`tunnel requests show SEQ --json --raw` prints, a copy: `seq`, `request`
+(`method`, `host`, `path`, `query`, `headers`, `body`, `body_encoding`, …) and
+`response` (`status`, `headers`, `body`, …), a JSON body as the parsed value.
+The request being answered is not among them yet. Read the log here rather than
+with `fetch` to the admin port, whose address a script cannot know: a second
+server on other ports would read the first one's log.
+
+```js
+function handler(ctx) {
+  const removed = ctx.requests({ key: 'DELETE:api.example.com/v5/items/*' })
+    .filter((sent) => sent.response.status < 300)
+    .map((sent) => sent.request.path.split('/').pop())
+  const rec = ctx.recorded()
+  if (rec === null) return ctx.reply({ items: [] }, 404)
+  rec.body.items = rec.body.items.filter((item) => !removed.includes(String(item.id)))
+  return rec
 }
 ```
 

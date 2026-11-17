@@ -1,6 +1,6 @@
 usage: tunnel serve [-h] [--base BASE] [--json] [--admin-port PORT]
                     [--proxy-port PORT] [--proxy-host HOST] [--config-dir DIR]
-                    [--background]
+                    [--data-dir DIR] [--background]
 
 options:
   -h, --help            show this help message and exit
@@ -15,5 +15,7 @@ options:
   --config-dir DIR      put config, state and data in this one directory
                         (default: the nearest .tunnel/, else the user
                         directories)
+  --data-dir DIR        keep the recordings in this directory instead; tunnels
+                        started with the same one replay the same recordings
   --background          start it in a process of its own and return once it
                         answers; `tunnel status` and `tunnel stop` follow it

@@ -31,6 +31,13 @@ while command line tools — git and gh among them — live in `~/.config` there
 just as they do on Linux. Keeping config apart from state is what lets you wipe
 the state directory without losing the CA your devices already trust.
 
+`--data-dir DIR` on `tunnel serve`, `dataDir` in the library, moves the data
+alone, wherever the other two went: servers that each have a `--config-dir` of
+their own and share one `--data-dir` replay the same recordings. Every session
+directory holds a `.changed` file that each write rewrites. A server reads a
+session once and keeps it, and this file is how it notices what another server
+recorded, imported or deleted there.
+
 The server logs all three on startup, the first line of `tunnel ls` prints
 them, and `GET /__admin__/health` reports them.
 

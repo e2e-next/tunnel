@@ -166,6 +166,34 @@ test('a background server starts, reports itself and stops [slow]', async (t) =>
   assert.ok(!existsSync(paths.pidFile))
 })
 
+// --data-dir is read where the command was run, as --config-dir is, and handed to the child
+test('a background server keeps its recordings where --data-dir says [slow]', async (t) => {
+  const { dir, io, run } = background(t)
+  const adminPort = await freePort()
+
+  assert.equal(
+    await run(
+      'serve',
+      '--background',
+      '--admin-port',
+      String(adminPort),
+      '--proxy-port',
+      '0',
+      '--proxy-host',
+      '127.0.0.1',
+      '--data-dir',
+      'shared',
+    ),
+    0,
+  )
+  io.takeOutput()
+
+  assert.equal(await run('status'), 0)
+  const status = io.takeOutput().out
+  assert.ok(status.includes(`config: ${dir}  state: ${dir}  data: ${join(dir, 'shared')}`), status)
+  assert.equal(await run('stop'), 0)
+})
+
 test('status and stop say so when nothing was started', async (t) => {
   const { io, run } = background(t)
   assert.equal(await run('status'), 1)

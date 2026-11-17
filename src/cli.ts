@@ -209,6 +209,14 @@ const COMMANDS: readonly CommandSpec<CommandHandler>[] = [
           'else the user directories)',
       },
       {
+        flags: ['--data-dir'],
+        dest: 'data_dir',
+        metavar: 'DIR',
+        help:
+          'keep the recordings in this directory instead; tunnels started with the same one ' +
+          'replay the same recordings',
+      },
+      {
         flags: ['--background'],
         action: 'store_true',
         help:

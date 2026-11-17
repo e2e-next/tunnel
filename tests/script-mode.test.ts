@@ -832,6 +832,11 @@ test('a returned recording the script broke is a 500 rather than a crash', async
   assert.ok(text.startsWith('The script failed:\nTypeError: '), text)
 })
 
+/** What ctx.recorded(), ctx.recordings() and ctx.requests() throw once their request is answered */
+const NOT_RUNNING =
+  'ctx.recorded(), ctx.recordings() and ctx.requests() work only while their own request is ' +
+  'being answered'
+
 // The main thread reads the recordings with the reader of the request being
 // answered, so a lookup for any other has nothing to answer it. A ctx kept on globalThis and used
 // by a later request would wait for good, and every script request after it with it; the worker
@@ -853,9 +858,7 @@ test('ctx.recorded() on a ctx kept from an earlier request throws rather than ho
 
   assert.equal(later.status, 500)
   const text = later.body.toString('utf8')
-  const sentence =
-    'ctx.recorded() and ctx.recordings() work only while their own request is being answered'
-  assert.ok(text.startsWith(`The script failed:\nError: ${sentence}\n`), text)
+  assert.ok(text.startsWith(`The script failed:\nError: ${NOT_RUNNING}\n`), text)
   assert.ok(text.includes('script:GET:/api/kept:2'), text)
   assert.deepEqual(payload(await ask('/api/ok')), { ok: true })
 })
@@ -887,9 +890,7 @@ test('ctx.recorded() in a callback a handler left behind throws there, and is lo
   const channel = new BroadcastChannel('script-mode leftover')
   channel.postMessage('now')
   channel.close()
-  const sentence =
-    'ctx.recorded() and ctx.recordings() work only while their own request is being answered'
-  const logged = () => uncaught(logs, `Error: ${sentence}`)
+  const logged = () => uncaught(logs, `Error: ${NOT_RUNNING}`)
   for (let waited = 0; !logged() && waited < 2000; waited += 10) await delay(10)
   assert.ok(logged(), logs.text())
 
@@ -960,10 +961,8 @@ test('an error in a timer a handler left behind does not fail the run it goes of
     assert.equal(waited.status, 200, `${path}: ${waited.body.toString('utf8')}`)
     assert.deepEqual(payload(waited), { waited: true })
   }
-  const sentence =
-    'ctx.recorded() and ctx.recordings() work only while their own request is being answered'
   assert.ok(uncaught(logs, 'Error: later'), logs.text())
-  assert.ok(uncaught(logs, `Error: ${sentence}`), logs.text())
+  assert.ok(uncaught(logs, `Error: ${NOT_RUNNING}`), logs.text())
 })
 
 // A returned value the worker cannot hand to the main thread fails the run as a throw would, rather
@@ -1367,4 +1366,155 @@ test('ctx.recordings takes a key and a session of its own', async (t) => {
   })
 
   assert.deepEqual(payload(response), { own: [1], key: [2], session: [3] })
+})
+
+// ---------------------------------------------------------------- ctx.requests()
+
+/** A json rule answering {"ok": true}, so that a request to it is logged without the network */
+const setJson = (e: Env, key: string) =>
+  e.manager.updateRequestConfig(key, { mode: 'json', json_response: { ok: true } })
+
+// What ctx.state cannot do, being one bucket per rule: answer one endpoint by what another was sent.
+// A reset is the next test case, and what came before it is not that one's to see
+test('ctx.requests reads what another rule was sent, from the last reset on', async (t) => {
+  const e = env(t)
+  setJson(e, 'PUT:/api/items/*')
+  const script = `function handler(ctx) {
+  return ctx.requests({ key: 'PUT:/api/items/*' }).map((sent) => [sent.request.path, sent.request.body.done, sent.response.status])
+}
+`
+  setScript(e, 'GET:/api/items', script)
+  const put = (id: string, done: boolean) =>
+    answer(e, {
+      method: 'PUT',
+      host: 'api.example.com',
+      path: `/api/items/${id}`,
+      body: Buffer.from(JSON.stringify({ done })),
+    })
+  const list = async () =>
+    payload(await answer(e, { method: 'GET', host: 'api.example.com', path: '/api/items' }))
+
+  await put('1', true)
+  await put('2', false)
+  assert.deepEqual(await list(), [
+    ['/api/items/1', true, 200],
+    ['/api/items/2', false, 200],
+  ])
+
+  e.core.resetState()
+  assert.deepEqual(await list(), [])
+  await put('3', true)
+  assert.deepEqual(await list(), [['/api/items/3', true, 200]])
+  // A reset of one rule is no new test case
+  e.core.resetState('GET:/api/items')
+  assert.deepEqual(await list(), [['/api/items/3', true, 200]])
+})
+
+// With no key it is every request, the script's own earlier ones included, but never the one it
+// is answering, which is logged once it is answered. since moves the start, before the reset too
+test('ctx.requests with no key is every request, and since says where to start', async (t) => {
+  const e = env(t)
+  setJson(e, 'GET:/api/other')
+  const script = `function handler(ctx) {
+  const seqs = (requests) => requests.map((sent) => sent.seq)
+  return { all: seqs(ctx.requests()), since: seqs(ctx.requests({ since: Number(ctx.query.since) })) }
+}
+`
+  setScript(e, 'GET:/api/seen', script)
+  const other = () => answer(e, { method: 'GET', host: 'x', path: '/api/other' })
+  const seen = async (since: number) =>
+    payload(
+      await answer(e, {
+        method: 'GET',
+        host: 'x',
+        path: '/api/seen',
+        query: { since: `${since}` },
+      }),
+    )
+
+  await other()
+  await other()
+  e.core.resetState()
+  await other()
+
+  assert.deepEqual(await seen(0), { all: [3], since: [1, 2, 3] })
+  assert.deepEqual(await seen(3), { all: [3, 4], since: [4] })
+})
+
+// The log reads back the tail of requests.jsonl when a tunnel starts, for the panel and for seq to
+// carry on; those are the last run's, which a script's ctx.requests() leaves out until told since
+test("ctx.requests leaves out the last run's requests that a restarted tunnel read back", async (t) => {
+  let restarted: TunnelCore | undefined
+  t.after(() => restarted?.close())
+  const dir = tmpDir(t)
+  const first = new TunnelCore(new TunnelConfigManager(Paths.inOneDirectory(dir)))
+  first.configManager.updateRequestConfig('GET:/api/other', {
+    mode: 'json',
+    json_response: { ok: true },
+  })
+  await first.resolve(makeRequest({ method: 'GET', host: 'x', path: '/api/other' }))
+  await first.close()
+
+  restarted = new TunnelCore(new TunnelConfigManager(Paths.inOneDirectory(dir)))
+  restarted.configManager.updateRequestConfig('GET:/api/seen', {
+    mode: 'script',
+    script: `function handler(ctx) {
+  return { now: ctx.requests().length, before: ctx.requests({ since: 0 }).length }
+}
+`,
+  })
+  assert.equal(restarted.exchanges.size, 1)
+  const response = await restarted.resolve(
+    makeRequest({ method: 'GET', host: 'x', path: '/api/seen' }),
+  )
+
+  assert.deepEqual(payload(response), { now: 0, before: 1 })
+})
+
+// The log's own entries are the panel's and the API's: a script gets copies made from their JSON,
+// in which an integer past 2^53 is a BigInt, as it is in ctx.json
+test('ctx.requests hands a script copies, with integers past 2^53 as BigInts', async (t) => {
+  const e = env(t)
+  setJson(e, 'POST:/api/notes')
+  const script = `function handler(ctx) {
+  const [sent] = ctx.requests({ key: 'POST:/api/notes' })
+  const id = sent.request.body.id
+  sent.request.body.text = 'changed by the script'
+  return { bigint: typeof id === 'bigint', id: String(id) }
+}
+`
+  setScript(e, 'GET:/api/notes', script)
+  const body = '{"id": 12345678901234567890, "text": "as sent"}'
+  await answer(e, { method: 'POST', host: 'x', path: '/api/notes', body: Buffer.from(body) })
+
+  const response = await answer(e, { method: 'GET', host: 'x', path: '/api/notes' })
+
+  assert.deepEqual(payload(response), { bigint: true, id: '12345678901234567890' })
+  const logged = e.core.exchanges.get(1)?.request.body
+  assert.equal(JSON.stringify(logged), '{"id":12345678901234567890,"text":"as sent"}')
+})
+
+// What the main thread cannot read, a key, is thrown where the script called it, as ctx.recorded's
+// is; a since or options it could only misread are refused in the script before they are asked
+test("a bad key, since or options in ctx.requests is the script's own error", async (t) => {
+  const e = env(t)
+  const failing = async (call: string) => {
+    setScript(e, 'GET:/api/bad', `function handler(ctx) {\n  return ${call}\n}\n`)
+    const response = await answer(e, { method: 'GET', host: 'x', path: '/api/bad' })
+    assert.equal(response.status, 500)
+    const text = response.body.toString('utf8')
+    assert.ok(text.includes('script:GET:/api/bad:2'), text)
+    return text
+  }
+
+  const key = await failing("ctx.requests({ key: 'bad key' })")
+  assert.ok(key.startsWith('The script failed:\nError: '), key)
+  assert.ok(key.includes("'bad key' is not a valid request key"), key)
+  const since = await failing("ctx.requests({ since: '5' })")
+  const notAnInteger = "TypeError: ctx.requests: since must be an integer, not '5'"
+  assert.ok(since.startsWith(`The script failed:\n${notAnInteger}\n`), since)
+  const options = await failing("ctx.requests('PUT:/api/items/*')")
+  const notAnObject =
+    'TypeError: ctx.requests: options must be an object, as in ctx.requests({ key })'
+  assert.ok(options.startsWith(`The script failed:\n${notAnObject}\n`), options)
 })
