@@ -146,6 +146,25 @@ tunnel set GET api.example.com/v5/feed -d '{"cards": []}'   # 用这个作答
 tunnel check GET https://api.example.com/v5/feed       # 经代理口真打一发
 ```
 
+## 和其他工具比
+
+录制回放不是新东西，能让 agent 驱动的代理也不止 tunnel 一个。它以 MIT 协议把客户端
+测试需要的几样东西放到了一起：设备照旧请求真实的 host，只是代理指向它；录制是可以提交
+的文件；回放时没录过的一律拒绝；可以用 JavaScript 函数改录制的返回；可以用带 `--json`
+的命令行、HTTP 接口、进程内的 Node 调用或 MCP 来驱动它。
+
+- **Charles、Proxyman、Reqable、HTTP Toolkit**：有人盯着流量看的时候，用它们的 GUI
+  最顺手；Proxyman（要付费授权）和 Reqable 也有 MCP server。tunnel 面向的是测试套件和
+  agent：一轮又一轮地改返回、查调用。
+- **mitmproxy**：能录（`-w`）能放（`--server-replay`），别的写个 Python addon 也都能做。
+  tunnel 直接带着测试要的那一套：按接口的 JSON 规则、JavaScript 脚本、等待某个调用、
+  可以拿来断言的请求日志。
+- **WireMock、MockServer、Hoverfly**：同样能做代理、录制和回放，MockServer 还有 MCP
+  接口。它们主要用来测一个服务和它的依赖；tunnel 围绕手机和模拟器来做：只解密你点名的
+  host，有现成命令把 CA 放进模拟器，`npm` 一装就能用。
+- **MSW、nock、Polly.js**：在一个 JavaScript 进程里拦截，原生 app 的流量到不了它们
+  那里。tunnel 在网络这一层，Node 测试照样可以用 `startTunnel()` 在进程里起它。
+
 ## 文档
 
 | 页面 | 讲什么 |

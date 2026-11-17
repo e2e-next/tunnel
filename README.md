@@ -160,6 +160,32 @@ tunnel set GET api.example.com/v5/feed -d '{"cards": []}'   # answer it with thi
 tunnel check GET https://api.example.com/v5/feed       # send one request through the proxy
 ```
 
+## How it compares
+
+Recording and replay are not new, and tunnel is not the only proxy an agent can
+drive. What it puts together, under MIT, is what a client test suite needs: the
+device keeps calling its real hosts through a proxy, recordings are files you
+commit, replay refuses whatever was never recorded, a JavaScript function can
+edit a recorded answer, and it is driven as a CLI with `--json`, over HTTP,
+in-process from Node or as an MCP server.
+
+- **Charles, Proxyman, Reqable, HTTP Toolkit** are the GUIs to reach for when a
+  person is watching the traffic, and Proxyman (with a paid licence) and Reqable
+  have MCP servers too. tunnel is for when a test suite or an agent has to change
+  the answers and check the calls, run after run.
+- **mitmproxy** records (`-w`) and replays (`--server-replay`), and anything else
+  is a Python addon away. tunnel ships the test workflow itself: per-endpoint
+  rules in JSON, scripts in JavaScript, waiting for a call, and a request log to
+  assert on.
+- **WireMock, MockServer, Hoverfly** proxy, record and replay as well, and
+  MockServer has an MCP endpoint. They are built mainly for testing a service
+  against its dependencies; tunnel is built around a phone or a simulator: it
+  decrypts only the hosts you name, has commands that put its CA on a simulator
+  or an emulator, and installs with npm.
+- **MSW, nock, Polly.js** intercept inside one JavaScript process, so a native
+  app's traffic never reaches them. tunnel sits on the network, and a Node suite
+  can still start it in-process with `startTunnel()`.
+
 ## Documentation
 
 | Page | What it covers |
