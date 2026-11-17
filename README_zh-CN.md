@@ -10,6 +10,8 @@ AI-first 的 mock server 与 HTTPS 代理：把手机、模拟器或任何 HTTP 
 [![npm](https://img.shields.io/npm/v/tunnel-use.svg)](https://www.npmjs.com/package/tunnel-use)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENSE)
 
+![tunnel 的面板：app 发出的每个请求，各自的状态码、耗时和由谁作答，右边展开其中一个](https://raw.githubusercontent.com/e2e-next/tunnel/main/docs/images/panel-traffic.png)
+
 ## 痛点
 
 拿真实后端测客户端，又慢又不稳：
