@@ -26,6 +26,11 @@ tunnel set GET /v5/feed -d '{"code": 0, "cards": []}'
 tunnel set GET /v5/feed -d @feed.json --status 201
 ```
 
+`--status` 只属于这个模式：它是这段 JSON 返回时的状态码，也是 `garbage` 故障发出的
+状态码。passthrough、replay 和 script 各自带着自己的状态码作答，所以在这些规则上
+`--status` 什么也不改，尽管 `tunnel ls` 会显示它；脚本要换状态码，用
+`ctx.reply(body, status)`，或者改掉交回去的那份录制的 `status`。
+
 **script** —— 每个请求跑一次 `handler(ctx)`：
 
 ```js
@@ -127,7 +132,7 @@ tunnel mode replay --session acct_a   # 模式和 session 一次设好
 tunnel set GET /v5/feed --merge '{"data": {"total": 0}}'
 tunnel set GET /v5/feed -H 'Set-Cookie: sid=1' --content-type application/json
 tunnel set GET /v5/pay --fault hang --fault-seconds 30   # 也可以是 garbage、close、none
-tunnel set GET /v5/feed --delay 1.5 --status 503
+tunnel set GET /v5/feed --delay 1.5
 tunnel set GET /v5/feed --disable            # 一直 503，直到 --enable
 ```
 

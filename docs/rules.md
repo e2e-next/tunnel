@@ -28,6 +28,12 @@ tunnel set GET /v5/feed -d '{"code": 0, "cards": []}'
 tunnel set GET /v5/feed -d @feed.json --status 201
 ```
 
+`--status` belongs to this mode: it is the status the JSON goes back with, and
+the one the `garbage` fault sends. A passthrough, a replay and a script each
+answer with a status of their own, so on those rules `--status` changes nothing,
+even though `tunnel ls` shows it; a script picks one with
+`ctx.reply(body, status)`, or by setting `status` on the recording it hands back.
+
 **script** — run `handler(ctx)` once per request:
 
 ```js
@@ -144,7 +150,7 @@ mocked, a real and a replayed response:
 tunnel set GET /v5/feed --merge '{"data": {"total": 0}}'
 tunnel set GET /v5/feed -H 'Set-Cookie: sid=1' --content-type application/json
 tunnel set GET /v5/pay --fault hang --fault-seconds 30   # or garbage, close, none
-tunnel set GET /v5/feed --delay 1.5 --status 503
+tunnel set GET /v5/feed --delay 1.5
 tunnel set GET /v5/feed --disable            # 503 until --enable
 ```
 
