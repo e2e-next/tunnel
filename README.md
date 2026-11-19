@@ -16,22 +16,23 @@ change what any endpoint answers, and record real answers to replay offline.
 
 ### With your coding agent
 
-1. **Install and start tunnel:**
+1. **Start tunnel.** npx fetches it, so there is nothing to install first:
 
    ```bash
-   npm install -g tunnel-use     # Node 22.18+; the command is `tunnel`
-   tunnel serve --background
+   npx tunnel-use serve --background     # Node 22.18+
    ```
 
 2. **Add it to your agent:**
 
    ```bash
-   claude mcp add --scope user tunnel -- tunnel mcp   # Claude Code
-   codex mcp add tunnel -- tunnel mcp                 # Codex
+   claude mcp add --scope user tunnel -- npx -y tunnel-use mcp   # Claude Code
+   codex mcp add tunnel -- npx -y tunnel-use mcp                 # Codex
    ```
 
    Other MCP clients, such as Cursor and Windsurf, take
-   `{"mcpServers": {"tunnel": {"command": "tunnel", "args": ["mcp"]}}}`.
+   `{"mcpServers": {"tunnel": {"command": "npx", "args": ["-y", "tunnel-use", "mcp"]}}}`.
+   The agent's side only connects to the tunnel from step 1 and never starts
+   one, so step 1 stays.
 
 3. **Open a new agent session and ask.** No app is needed yet; the agent can
    send requests through tunnel itself:
@@ -46,7 +47,9 @@ change what any endpoint answers, and record real answers to replay offline.
 
 ### On a phone
 
-1. **Start tunnel**, unless it is already running:
+1. **Install and start tunnel**, unless it is already running. The steps
+   below use the `tunnel` command; without installing, write `npx tunnel-use`
+   in its place.
 
    ```bash
    npm install -g tunnel-use

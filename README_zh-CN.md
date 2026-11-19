@@ -16,22 +16,22 @@
 
 ### 交给 AI 编码助手
 
-1. **安装并启动 tunnel：**
+1. **启动 tunnel**。npx 会自己下载，不用先装：
 
    ```bash
-   npm install -g tunnel-use     # 需要 Node 22.18+；命令叫 `tunnel`
-   tunnel serve --background
+   npx tunnel-use serve --background     # 需要 Node 22.18+
    ```
 
 2. **把它加给 agent：**
 
    ```bash
-   claude mcp add --scope user tunnel -- tunnel mcp   # Claude Code
-   codex mcp add tunnel -- tunnel mcp                 # Codex
+   claude mcp add --scope user tunnel -- npx -y tunnel-use mcp   # Claude Code
+   codex mcp add tunnel -- npx -y tunnel-use mcp                 # Codex
    ```
 
    Cursor、Windsurf 等其他 MCP 客户端填
-   `{"mcpServers": {"tunnel": {"command": "tunnel", "args": ["mcp"]}}}`。
+   `{"mcpServers": {"tunnel": {"command": "npx", "args": ["-y", "tunnel-use", "mcp"]}}}`。
+   agent 这一侧只连第 1 步起好的 tunnel，自己不会启动，所以第 1 步不能省。
 
 3. **开一个新的 agent 会话，直接提要求。** 还不用接 app，agent 自己就能经 tunnel
    发请求：
@@ -45,7 +45,8 @@
 
 ### 接上手机
 
-1. **启动 tunnel**（已经起好就跳过）：
+1. **安装并启动 tunnel**（已经起好就跳过）。下面几步用的是 `tunnel` 命令；
+   不想安装，就把 `tunnel` 换成 `npx tunnel-use`。
 
    ```bash
    npm install -g tunnel-use
