@@ -1,8 +1,10 @@
 # tunnel
 
-AI-first 的 mock server 与 HTTPS 代理：把手机、模拟器或任何 HTTP 客户端指向它，
-就能查看、录制、mock、回放 API 调用 —— 由你的 AI 编码助手通过 MCP 或命令行驱动，
-也可以嵌进你自己的代码里驱动。
+给 App 开发者的 HTTPS 调试代理：Charles、Proxyman 的开源替代，专为让 AI 编码
+助手来驱动而设计。
+
+把手机、模拟器或任何 HTTP 客户端指向它，就能看到每一次 API 调用、改任意接口的
+返回，还能把真实返回录下来离线回放。
 
 📖 [English](README.md)
 
@@ -10,82 +12,78 @@ AI-first 的 mock server 与 HTTPS 代理：把手机、模拟器或任何 HTTP 
 [![npm](https://img.shields.io/npm/v/tunnel-use.svg)](https://www.npmjs.com/package/tunnel-use)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENSE)
 
-## 痛点
+## 快速上手
 
-拿真实后端测客户端，又慢又不稳：
+### 交给 AI 编码助手
 
-- 真正值得测的情况 —— 空列表、支付失败、响应很慢或返回坏数据 —— 很难让真实服务器
-  按需给出来。
-- 真实数据会变，测试账号会被用掉，同一轮测试明天就是另一个结果。
-- Charles 这类代理能改返回，但得手点，一次一下：测试套件和 AI 编码助手都驱动不了。
-- 另起一个 mock server，就得让 app 改连别的地址，每个返回还都要自己写。
-- CI 悄悄打到了真实后端，测试过了，却不是因为对的理由。
+1. **安装并启动 tunnel：**
 
-## tunnel 怎么解决
+   ```bash
+   npm install -g tunnel-use     # 需要 Node 22.18+；命令叫 `tunnel`
+   tunnel serve --background
+   ```
 
-app 照旧调用它真实的 host，只需要把 HTTP 代理指向 tunnel、信任 tunnel 的证书。
-tunnel 解密你点名的 host，记下每一次调用，每个端点按它的规则作答：
+2. **把它加给 agent：**
 
-- **录制**：真实返回录一次，每次调用一个 JSON 文件，可以和测试一起提交。
-- **Mock**：答字面量 JSON，或者交给 JavaScript `handler(ctx)`，它可以拿录制的返回
-  改掉其中一个字段再答。
-- **回放**：从录制作答，不碰网络。没有任何东西能答的调用直接拒绝，不会漏到真实后端，
-  `tunnel requests --unmatched` 会把它们列出来。
-- **故意弄坏**：任意状态码、延迟、挂住或掐断连接、JSON 写到一半的响应体。
-- **检查**：等调用到来而不是 sleep，再把它完整读回来。
+   ```bash
+   claude mcp add --scope user tunnel -- tunnel mcp   # Claude Code
+   codex mcp add tunnel -- tunnel mcp                 # Codex
+   ```
 
-规则下一个请求就生效，不用重启，也不用重新打包 app。
+   Cursor、Windsurf 等其他 MCP 客户端填
+   `{"mcpServers": {"tunnel": {"command": "tunnel", "args": ["mcp"]}}}`。
 
-## 特色
+3. **开一个新的 agent 会话，直接提要求。** 还不用接 app，agent 自己就能经 tunnel
+   发请求：
 
-### AI-first：让 AI 编码助手来驱动
+   > 把 https://jsonplaceholder.typicode.com/todos/1 录下来，离线回放，再让它返回
+   > 503，最后把每一次调用列给我看。
 
-`tunnel mcp` 给 Claude Code、Codex 或任何 MCP 客户端十六个带类型的工具。每条命令
-也都能加 `--json`，退出码可以拿来分支；`tunnel agents` 打印对应已装版本的使用指南。
+   等 app 照下一节接上 tunnel，就可以问 app 自己的调用：
 
-```bash
-claude mcp add tunnel -- tunnel mcp        # Claude Code
-codex mcp add tunnel -- tunnel mcp         # Codex
-```
+   > 让 GET api.example.com/v5/feed 返回空列表，再告诉我 app 发了什么。
 
-之后用一句大白话提要求就够了 ——「feed 返回空列表，然后告诉我 app 调了什么」——
-agent 会设好规则、等调用到来、再把它们读回来。
+### 接上手机
 
-### 嵌进测试代码
+1. **启动 tunnel**（已经起好就跳过）：
 
-每个用例在测试里自己设定返回、自己检查 app 调了什么。跑在 Node 或 TypeScript
-里的测试套件直接在自己的进程里起 tunnel，不用先起服务，也不用约定端口：
+   ```bash
+   npm install -g tunnel-use
+   tunnel serve --background
+   ```
 
-```ts
-import assert from 'node:assert/strict'
-import { startTunnel } from 'tunnel-use'
+   它会打印手机要填的地址，比如
+   `set the device's HTTP proxy to 192.168.1.23 port 8890`。
 
-const tunnel = await startTunnel({ proxyHost: '127.0.0.1' })
-try {
-  await tunnel.setRule({ key: 'GET:api.example.test/v5/feed', mode: 'json', json_response: { cards: [] } })
-  // …经 tunnel.proxyUrl 驱动 app；这里用一个请求代替
-  const answer = await tunnel.check('GET', 'http://api.example.test/v5/feed')
-  assert.equal(answer.status, 200)
-  const wait = await tunnel.waitForRequest({ key: 'GET:api.example.test/v5/feed', timeout: 5 })
-  assert.equal(wait.timed_out, false)
-} finally {
-  await tunnel.stop()
-}
-```
+2. **设置手机代理**：连同一个 Wi-Fi，手动代理填上面的地址和端口。
+   - iPhone：设置 > 无线局域网 > 当前网络旁的 ⓘ > 配置代理 > 手动
+   - Android：WLAN > 当前网络 > 高级 > 代理 > 手动
 
-跑在 app 里的 Swift、Kotlin 测试用例经管理 API 做同样的事。
+3. **安装证书**：手机浏览器打开 <http://ca.tunnel/>，照页面上的步骤装。有两步
+   容易漏：iPhone 要到 设置 > 通用 > 关于本机 > 证书信任设置 里把 tunnel 打开；
+   Android 7 起，app 的测试构建要信任用户证书（`<certificates src="user"/>`）。
 
-给人看的是 <http://127.0.0.1:8000/> 上的面板，请求一到就显示出来：
+4. **点名要解密的 host**：和 Charles 的 SSL Proxying 列表一样，没加进来的 host
+   不解密。
 
-![tunnel 的面板：app 发出的每个请求，各自的状态码、耗时和由谁作答，右边展开其中一个](https://raw.githubusercontent.com/e2e-next/tunnel/main/docs/images/panel-traffic.png)
+   ```bash
+   tunnel ssl add api.example.com
+   ```
 
-## 安装
+5. **开始用**：操作 app，在 <http://127.0.0.1:8000/> 看它的调用。改返回，下一个
+   请求就生效：
 
-```bash
-npm install -g tunnel-use   # 包名；命令叫 `tunnel`
-```
+   ```bash
+   tunnel set GET api.example.com/v5/feed -d '{"cards": []}'                # Map Local：用这段 JSON 作答
+   tunnel set GET api.example.com/v5/feed --target http://localhost:3000    # Map Remote：转给本地开发服务
+   tunnel set GET api.example.com/v5/feed --status 500 -d '{"error": "x"}'  # 让它出错
+   tunnel rm GET api.example.com/v5/feed                                    # 恢复走真实服务器
+   ```
 
-需要 Node 22.18 或更新版本。
+   ![tunnel 的面板：app 发出的每个请求，各自的状态码、耗时和由谁作答，右边展开其中一个](https://raw.githubusercontent.com/e2e-next/tunnel/main/docs/images/panel-traffic.png)
+
+用完执行 `tunnel stop`，再把手机代理关掉。iOS 模拟器和 Android 模拟器怎么设，见
+[让设备走它](docs/zh-CN/devices.md)。
 
 ## 一分钟试用
 
@@ -118,52 +116,45 @@ tunnel stop && unset https_proxy CURL_CA_BUNDLE
 
 不想安装的话，`npx tunnel-use <命令>` 可以直接跑上面任何一条。
 
-## 接上手机或模拟器
+## 在测试代码里用
 
-```bash
-tunnel serve
+每个用例在测试里自己设定返回、自己检查 app 调了什么。跑在 Node 或 TypeScript
+里的测试套件直接在自己的进程里起 tunnel，不用先起服务，也不用约定端口：
+
+```ts
+import assert from 'node:assert/strict'
+import { startTunnel } from 'tunnel-use'
+
+const tunnel = await startTunnel({ proxyHost: '127.0.0.1' })
+try {
+  await tunnel.setRule({ key: 'GET:api.example.test/v5/feed', mode: 'json', json_response: { cards: [] } })
+  // …经 tunnel.proxyUrl 驱动 app；这里用一个请求代替
+  const answer = await tunnel.check('GET', 'http://api.example.test/v5/feed')
+  assert.equal(answer.status, 200)
+  const wait = await tunnel.waitForRequest({ key: 'GET:api.example.test/v5/feed', timeout: 5 })
+  assert.equal(wait.timed_out, false)
+} finally {
+  await tunnel.stop()
+}
 ```
 
-它会打印要填进设备的代理地址和要安装的 CA：
+跑在 app 里的 Swift、Kotlin 测试用例经管理 API 做同样的事。
 
-```
-tunnel 3.0.0
-  panel:  http://127.0.0.1:8000/
-  proxy:  0.0.0.0:8890
-    set the device's HTTP proxy to 192.168.1.23 port 8890
-  upstream: direct
-  CA:     http://ca.tunnel/ once the device is proxied, or http://192.168.1.23:8890/ca.pem
-          8B:6F:...:1C
-```
+## 为什么用 tunnel 而不是 Charles 或 Proxyman
 
-把设备设好（各平台的步骤见[让设备走它](docs/zh-CN/devices.md)），打开
-<http://127.0.0.1:8000/> 看请求到达，然后：
+日常那一套 —— 手机设代理、装证书、解密点名的 host、看请求、改返回 —— tunnel 和它们
+用起来一样。除此之外：
 
-```bash
-tunnel requests                                        # 客户端实际调了什么
-tunnel ssl add api.example.com                         # 解密这个 host 的 HTTPS
-tunnel set GET api.example.com/v5/feed -d '{"cards": []}'   # 用这个作答
-tunnel check GET https://api.example.com/v5/feed       # 经代理口真打一发
-```
-
-## 和其他工具比
-
-录制回放不是新东西，能让 agent 驱动的代理也不止 tunnel 一个。它以 MIT 协议把客户端
-测试需要的几样东西放到了一起：设备照旧请求真实的 host，只是代理指向它；录制是可以提交
-的文件；回放时没录过的一律拒绝；可以用 JavaScript 函数改录制的返回；可以用带 `--json`
-的命令行、HTTP 接口、进程内的 Node 调用或 MCP 来驱动它。
-
-- **Charles、Proxyman、Reqable、HTTP Toolkit**：有人盯着流量看的时候，用它们的 GUI
-  最顺手；Proxyman（要付费授权）和 Reqable 也有 MCP server。tunnel 面向的是测试套件和
-  agent：一轮又一轮地改返回、查调用。
-- **mitmproxy**：能录（`-w`）能放（`--server-replay`），别的写个 Python addon 也都能做。
-  tunnel 直接带着测试要的那一套：按接口的 JSON 规则、JavaScript 脚本、等待某个调用、
-  可以拿来断言的请求日志。
-- **WireMock、MockServer、Hoverfly**：同样能做代理、录制和回放，MockServer 还有 MCP
-  接口。它们主要用来测一个服务和它的依赖；tunnel 围绕手机和模拟器来做：只解密你点名的
-  host，有现成命令把 CA 放进模拟器，`npm` 一装就能用。
-- **MSW、nock、Polly.js**：在一个 JavaScript 进程里拦截，原生 app 的流量到不了它们
-  那里。tunnel 在网络这一层，Node 测试照样可以用 `startTunnel()` 在进程里起它。
+- **AI 编码助手能驱动它。** MCP server 随 tunnel 一起装好，免费；每条命令也都能加
+  `--json`，退出码可以拿来分支；`tunnel agents` 打印对应已装版本的使用指南。Charles
+  没有官方的 MCP server，Proxyman 的 MCP 要付费授权才能用。
+- **录一次，离线回放。** 真实返回录成 JSON 文件，可以和测试一起提交，回放时从这些文件
+  作答、不碰网络。没有任何东西能答的调用直接拒绝，不会漏到真实后端，
+  `tunnel requests --unmatched` 会把它们列出来，所以 CI 不会因为悄悄打到了真实服务器
+  而蒙混过关。JavaScript 的 `handler(ctx)` 可以拿录下的返回改掉其中一个字段再答。
+- **测试代码也能驱动它。** Node 测试套件在自己的进程里起它；每个用例自己设定返回，
+  等 app 的调用到来而不是 sleep，再检查收到了什么。
+- **免费、开源**，MIT 协议，`npm` 一装就能用。
 
 ## 文档
 

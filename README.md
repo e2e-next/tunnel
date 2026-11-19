@@ -1,8 +1,10 @@
 # tunnel
 
-An AI-first mock server and HTTPS proxy: point a phone, simulator or any HTTP
-client at it to inspect, record, mock and replay API calls — driven by your
-coding agent over MCP or the CLI, or by code that embeds it.
+An HTTPS debugging proxy for app developers: an open-source alternative to
+Charles and Proxyman, built for your AI coding agent to drive.
+
+Point a phone, a simulator or any HTTP client at it to see every API call,
+change what any endpoint answers, and record real answers to replay offline.
 
 📖 [中文文档](README_zh-CN.md)
 
@@ -10,95 +12,81 @@ coding agent over MCP or the CLI, or by code that embeds it.
 [![npm](https://img.shields.io/npm/v/tunnel-use.svg)](https://www.npmjs.com/package/tunnel-use)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENSE)
 
-## The problem
+## Quick start
 
-Testing a client against its real backend is slow and fragile:
+### With your coding agent
 
-- The cases that matter — an empty list, a failed payment, a slow or broken
-  response — are hard to get out of a real server on demand.
-- Real data drifts and test accounts get used up, so the same run gives a
-  different result tomorrow.
-- A proxy such as Charles can change an answer, but by hand, one click at a
-  time: neither a test suite nor a coding agent can drive it.
-- A separate mock server means pointing the app at another address and
-  writing every answer yourself.
-- A CI run that quietly reaches the real backend passes for the wrong reason.
+1. **Install and start tunnel:**
 
-## What tunnel does
+   ```bash
+   npm install -g tunnel-use     # Node 22.18+; the command is `tunnel`
+   tunnel serve --background
+   ```
 
-The app keeps calling its real hosts; it only needs its HTTP proxy pointed at
-tunnel and tunnel's certificate trusted. tunnel decrypts the hosts you name,
-logs every call, and answers each endpoint the way its rule says:
+2. **Add it to your agent:**
 
-- **Record** the real answers once, each call a JSON file you can commit next
-  to the tests.
-- **Mock** with literal JSON, or with a JavaScript `handler(ctx)` that can take
-  the recorded answer and change one field of it.
-- **Replay** from the recordings without touching the network. A call nothing
-  answers is refused rather than sent to the real backend, and
-  `tunnel requests --unmatched` lists it.
-- **Break** an endpoint on purpose: any status, a delay, a hung or dropped
-  connection, a body cut off mid-JSON.
-- **Check** what the app called: wait for a call instead of sleeping, then read
-  it back whole.
+   ```bash
+   claude mcp add --scope user tunnel -- tunnel mcp   # Claude Code
+   codex mcp add tunnel -- tunnel mcp                 # Codex
+   ```
 
-A rule takes effect on the next request — no restart, no rebuild of the app.
+   Other MCP clients, such as Cursor and Windsurf, take
+   `{"mcpServers": {"tunnel": {"command": "tunnel", "args": ["mcp"]}}}`.
 
-## What sets it apart
+3. **Open a new agent session and ask.** No app is needed yet; the agent can
+   send requests through tunnel itself:
 
-### AI-first: your coding agent drives it
+   > Record https://jsonplaceholder.typicode.com/todos/1, replay it offline,
+   > then make it return 503 and show me every call.
 
-`tunnel mcp` gives Claude Code, Codex or any MCP client sixteen typed tools.
-Every command also takes `--json` and exits with a code an agent can branch on,
-and `tunnel agents` prints the guide for the version installed.
+   Once your app goes through tunnel, as below, ask about its calls:
 
-```bash
-claude mcp add tunnel -- tunnel mcp        # Claude Code
-codex mcp add tunnel -- tunnel mcp         # Codex
-```
+   > Make GET api.example.com/v5/feed return an empty list, and show me what
+   > the app sent.
 
-Then ask in plain words — "answer the feed with an empty list, then show me
-what the app called" — and the agent sets the rule, waits for the calls and
-reads them back.
+### On a phone
 
-### Embedded in your test code
+1. **Start tunnel**, unless it is already running:
 
-Each test case sets its own answers and checks what the app called. A Node or
-TypeScript suite starts tunnel inside its own process, with nothing to start
-first and no port to agree on:
+   ```bash
+   npm install -g tunnel-use
+   tunnel serve --background
+   ```
 
-```ts
-import assert from 'node:assert/strict'
-import { startTunnel } from 'tunnel-use'
+   It prints the address for the phone, such as
+   `set the device's HTTP proxy to 192.168.1.23 port 8890`.
 
-const tunnel = await startTunnel({ proxyHost: '127.0.0.1' })
-try {
-  await tunnel.setRule({ key: 'GET:api.example.test/v5/feed', mode: 'json', json_response: { cards: [] } })
-  // ... drive the app through tunnel.proxyUrl; here one request stands in for it
-  const answer = await tunnel.check('GET', 'http://api.example.test/v5/feed')
-  assert.equal(answer.status, 200)
-  const wait = await tunnel.waitForRequest({ key: 'GET:api.example.test/v5/feed', timeout: 5 })
-  assert.equal(wait.timed_out, false)
-} finally {
-  await tunnel.stop()
-}
-```
+2. **Set the phone's proxy** to that address and port, on the same Wi-Fi:
+   - iPhone: Settings > Wi-Fi > ⓘ next to the network > Configure Proxy > Manual
+   - Android: Wi-Fi > the network > Advanced > Proxy > Manual
 
-A Swift or Kotlin test case running inside the app does the same over the
-admin API.
+3. **Install the certificate:** open <http://ca.tunnel/> on the phone and follow
+   the steps there. Two are easy to miss: on iPhone, switch tunnel on under
+   Settings > General > About > Certificate Trust Settings; on Android 7 and
+   later, the app's debug build has to trust user certificates
+   (`<certificates src="user"/>`).
 
-For people watching a run, the panel at <http://127.0.0.1:8000/> shows the calls
-as they arrive:
+4. **Name the hosts to decrypt.** As with Charles's SSL Proxying list, nothing is
+   decrypted until you add it:
 
-![tunnel's panel: every call the app made, with its status, its timing and what answered it, and one call opened in full](https://raw.githubusercontent.com/e2e-next/tunnel/main/docs/images/panel-traffic.png)
+   ```bash
+   tunnel ssl add api.example.com
+   ```
 
-## Install
+5. **Go.** Use the app and watch its calls at <http://127.0.0.1:8000/>. Change
+   an answer, and it applies from the next request:
 
-```bash
-npm install -g tunnel-use   # the package; the command is `tunnel`
-```
+   ```bash
+   tunnel set GET api.example.com/v5/feed -d '{"cards": []}'                # Map Local: answer with this JSON
+   tunnel set GET api.example.com/v5/feed --target http://localhost:3000    # Map Remote: send it to your dev server
+   tunnel set GET api.example.com/v5/feed --status 500 -d '{"error": "x"}'  # make it fail
+   tunnel rm GET api.example.com/v5/feed                                    # back to the real server
+   ```
 
-Node 22.18 or newer.
+   ![tunnel's panel: every call the app made, with its status, its timing and what answered it, and one call opened in full](https://raw.githubusercontent.com/e2e-next/tunnel/main/docs/images/panel-traffic.png)
+
+When you are done, run `tunnel stop` and switch the phone's proxy off.
+Simulators and emulators are covered in [Point a device at it](docs/devices.md).
 
 ## Try it in a minute
 
@@ -131,60 +119,52 @@ tunnel stop && unset https_proxy CURL_CA_BUNDLE
 
 `npx tunnel-use <command>` runs any of these without installing.
 
-## On a phone or simulator
+## In your test code
 
-```bash
-tunnel serve
+Each test case sets its own answers and checks what the app called. A Node or
+TypeScript suite starts tunnel inside its own process, with nothing to start
+first and no port to agree on:
+
+```ts
+import assert from 'node:assert/strict'
+import { startTunnel } from 'tunnel-use'
+
+const tunnel = await startTunnel({ proxyHost: '127.0.0.1' })
+try {
+  await tunnel.setRule({ key: 'GET:api.example.test/v5/feed', mode: 'json', json_response: { cards: [] } })
+  // ... drive the app through tunnel.proxyUrl; here one request stands in for it
+  const answer = await tunnel.check('GET', 'http://api.example.test/v5/feed')
+  assert.equal(answer.status, 200)
+  const wait = await tunnel.waitForRequest({ key: 'GET:api.example.test/v5/feed', timeout: 5 })
+  assert.equal(wait.timed_out, false)
+} finally {
+  await tunnel.stop()
+}
 ```
 
-It prints the proxy address to set on the device and the CA to install:
+A Swift or Kotlin test case running inside the app does the same over the
+admin API.
 
-```
-tunnel 3.0.0
-  panel:  http://127.0.0.1:8000/
-  proxy:  0.0.0.0:8890
-    set the device's HTTP proxy to 192.168.1.23 port 8890
-  upstream: direct
-  CA:     http://ca.tunnel/ once the device is proxied, or http://192.168.1.23:8890/ca.pem
-          8B:6F:...:1C
-```
+## Why tunnel instead of Charles or Proxyman
 
-Set up the device ([Point a device at it](docs/devices.md) has the steps for
-each platform), open <http://127.0.0.1:8000/> to watch the calls arrive, and
-then:
+For the everyday loop — proxy the phone, install the certificate, decrypt the
+hosts you name, watch the calls, change an answer — tunnel works the way they
+do. On top of that:
 
-```bash
-tunnel requests                                        # what the client actually called
-tunnel ssl add api.example.com                         # decrypt this host's HTTPS
-tunnel set GET api.example.com/v5/feed -d '{"cards": []}'   # answer it with this
-tunnel check GET https://api.example.com/v5/feed       # send one request through the proxy
-```
-
-## How it compares
-
-Recording and replay are not new, and tunnel is not the only proxy an agent can
-drive. What it puts together, under MIT, is what a client test suite needs: the
-device keeps calling its real hosts through a proxy, recordings are files you
-commit, replay refuses whatever was never recorded, a JavaScript function can
-edit a recorded answer, and it is driven as a CLI with `--json`, over HTTP,
-in-process from Node or as an MCP server.
-
-- **Charles, Proxyman, Reqable, HTTP Toolkit** are the GUIs to reach for when a
-  person is watching the traffic, and Proxyman (with a paid licence) and Reqable
-  have MCP servers too. tunnel is for when a test suite or an agent has to change
-  the answers and check the calls, run after run.
-- **mitmproxy** records (`-w`) and replays (`--server-replay`), and anything else
-  is a Python addon away. tunnel ships the test workflow itself: per-endpoint
-  rules in JSON, scripts in JavaScript, waiting for a call, and a request log to
-  assert on.
-- **WireMock, MockServer, Hoverfly** proxy, record and replay as well, and
-  MockServer has an MCP endpoint. They are built mainly for testing a service
-  against its dependencies; tunnel is built around a phone or a simulator: it
-  decrypts only the hosts you name, has commands that put its CA on a simulator
-  or an emulator, and installs with npm.
-- **MSW, nock, Polly.js** intercept inside one JavaScript process, so a native
-  app's traffic never reaches them. tunnel sits on the network, and a Node suite
-  can still start it in-process with `startTunnel()`.
+- **Your coding agent drives it.** The MCP server comes with tunnel, free, and
+  every command also takes `--json` and exits with a code an agent can branch
+  on; `tunnel agents` prints the guide for the installed version. Charles has no
+  official MCP server, and Proxyman's needs a paid licence.
+- **Record once, replay offline.** Real answers are recorded as JSON files you
+  can commit next to your tests, and replay answers from them without the
+  network. A call nothing answers is refused instead of reaching the real
+  backend, and `tunnel requests --unmatched` lists it, so a CI run cannot pass
+  by quietly calling the server. A JavaScript `handler(ctx)` can take a recorded
+  answer and change one field of it.
+- **Your tests drive it too.** A Node suite starts it in-process; each case
+  sets its own answers, waits for the app's call instead of sleeping, and
+  checks what arrived.
+- **Free and open source**, under MIT, installed with npm.
 
 ## Documentation
 
