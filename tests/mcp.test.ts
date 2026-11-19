@@ -707,7 +707,7 @@ test('guide answers with nothing running at all', async (t) => {
 })
 
 // This server connects and never starts anything, so what comes back has to be a command the agent
-// can run itself
+// can run itself, whether tunnel was installed or only fetched by npx
 test('a tool that finds no server says how to start one', async (t) => {
   const { deps } = await mcpEnv(t)
   const tools = mcp.buildTools(() => BASE, { ...deps, fetch: refuse })
@@ -716,6 +716,7 @@ test('a tool that finds no server says how to start one', async (t) => {
 
   assert.equal(result.isError, true)
   assert.ok(text(result).includes('tunnel serve --background'), text(result))
+  assert.ok(text(result).includes('npx -y tunnel-use serve --background'), text(result))
 })
 
 // The hole this guards. An exception that got out of a tool would reject a promise nothing

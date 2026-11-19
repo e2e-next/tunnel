@@ -73,7 +73,8 @@ one.** It is the editor's child process and dies with the editor, while tunnel
 is the proxy a phone is pointed at and outlives several editor windows — and
 the person who starts it is usually the one who wants to read the LAN address
 and the CA fingerprint off the banner. A tool call with nothing answering says
-so, and names `tunnel serve --background`.
+so, and names `tunnel serve --background` and its npx form,
+`npx -y tunnel-use serve --background`.
 
 Sixteen tools, cut by what an agent actually does rather than one per endpoint,
 because every schema sits in every prompt whether it is called or not:

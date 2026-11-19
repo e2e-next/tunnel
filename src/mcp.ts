@@ -104,9 +104,12 @@ function content(text: string, isError: boolean): JsonObject {
 // What an agent is told on top of what call says when nothing answers. call words it for somebody
 // at a shell prompt, who can reach for --base; an agent cannot, so it is told the one thing it can
 // do instead. The command named is the background one, because this process is an editor's child
-// and a server started in its foreground would go when the editor does
+// and a server started in its foreground would go when the editor does. Its npx form is named too:
+// an editor set up with `npx -y tunnel-use mcp` put no `tunnel` on the PATH, and the agent cannot
+// see which way its editor was set up
 const NEVER_STARTS =
-  'tunnel mcp only connects, never starts a server: run `tunnel serve --background` and call again'
+  'tunnel mcp only connects, never starts a server: run `tunnel serve --background`, or ' +
+  '`npx -y tunnel-use serve --background` if there is no `tunnel` command, and call again'
 
 // What a tool's failure says when what it threw is no Error and String() cannot write it either:
 // an object with no prototype, which has no toString to call

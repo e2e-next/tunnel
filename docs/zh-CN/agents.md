@@ -61,7 +61,8 @@ query string 不参与规则匹配。所以两样都要；而只配了 MCP serve
 **`tunnel mcp` 连的是一个已经在跑的服务，它绝不会自己起一个。** 它是编辑器的子
 进程，编辑器一退它就死；而 tunnel 是手机要指过来的那个代理，通常比好几个编辑器
 窗口活得都久 —— 何况起它的那个人，多半正是要看 banner 里的 LAN 地址和 CA 指纹的
-人。服务没起时，工具调用会把这件事说清楚，并报出 `tunnel serve --background`。
+人。服务没起时，工具调用会把这件事说清楚，并报出 `tunnel serve --background` 和它的
+npx 写法 `npx -y tunnel-use serve --background`。
 
 16 个工具，是按「agent 真正要做的事」切的，而不是一个端点配一个，因为每个 schema
 不管用不用都常驻在每一次提示里：
